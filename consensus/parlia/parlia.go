@@ -495,7 +495,6 @@ func (p *Parlia) snapshot(chain consensus.ChainReader, number uint64, hash commo
 
 	// Previous snapshot found, apply any pending headers on top of it
 	for i := 0; i < len(headers)/2; i++ {
-		// not clear on why / 2 here. Need to think more on this if relevant.
 		headers[i], headers[len(headers)-1-i] = headers[len(headers)-1-i], headers[i]
 	}
 
