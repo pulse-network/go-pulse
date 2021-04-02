@@ -468,36 +468,6 @@ func (c *ChainConfig) IsConstantinople(num *big.Int) bool {
 	return isForked(c.ConstantinopleBlock, num)
 }
 
-// IsRamanujan returns whether num is either equal to the IsRamanujan fork block or greater.
-func (c *ChainConfig) IsRamanujan(num *big.Int) bool {
-	return isForked(c.RamanujanBlock, num)
-}
-
-// IsOnRamanujan returns whether num is equal to the Ramanujan fork block
-func (c *ChainConfig) IsOnRamanujan(num *big.Int) bool {
-	return configNumEqual(c.RamanujanBlock, num)
-}
-
-// IsNiels returns whether num is either equal to the Niels fork block or greater.
-func (c *ChainConfig) IsNiels(num *big.Int) bool {
-	return isForked(c.NielsBlock, num)
-}
-
-// IsOnNiels returns whether num is equal to the IsNiels fork block
-func (c *ChainConfig) IsOnNiels(num *big.Int) bool {
-	return configNumEqual(c.NielsBlock, num)
-}
-
-// IsMirrorSync returns whether num is either equal to the MirrorSync fork block or greater.
-func (c *ChainConfig) IsMirrorSync(num *big.Int) bool {
-	return isForked(c.MirrorSyncBlock, num)
-}
-
-// IsOnMirrorSync returns whether num is equal to the MirrorSync fork block
-func (c *ChainConfig) IsOnMirrorSync(num *big.Int) bool {
-	return configNumEqual(c.MirrorSyncBlock, num)
-}
-
 // IsMuirGlacier returns whether num is either equal to the Muir Glacier (EIP-2384) fork block or greater.
 func (c *ChainConfig) IsMuirGlacier(num *big.Int) bool {
 	return isForked(c.MuirGlacierBlock, num)
