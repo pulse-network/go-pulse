@@ -484,7 +484,7 @@ func (p *Parlia) snapshot(chain consensus.ChainReader, number uint64, hash commo
 				return nil, consensus.ErrUnknownAncestor
 			}
 		}
-		headers = append(headers, header)
+		headers = append(headers, header) // headers appended in descending order
 		number, hash = number-1, header.ParentHash
 	}
 
@@ -495,6 +495,7 @@ func (p *Parlia) snapshot(chain consensus.ChainReader, number uint64, hash commo
 
 	// Previous snapshot found, apply any pending headers on top of it
 	for i := 0; i < len(headers)/2; i++ {
+		// reverse the order of the headers array (sort ascending)
 		headers[i], headers[len(headers)-1-i] = headers[len(headers)-1-i], headers[i]
 	}
 
@@ -807,6 +808,7 @@ func (p *Parlia) Seal(chain consensus.ChainReader, block *types.Block, results c
 	for seen, recent := range snap.Recents {
 		if recent == val {
 			// Signer is among recents, only wait if the current block doesn't shift it out
+			// TODO CAN WE REMOVE THE number < limit clause here or add to the other check like this
 			if limit := uint64(len(snap.Validators)/2 + 1); number < limit || seen > number-limit {
 				log.Info("Signed recently, must wait for others")
 				return nil
