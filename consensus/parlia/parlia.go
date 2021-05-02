@@ -458,7 +458,6 @@ func (p *Parlia) snapshot(chain consensus.ChainReader, number uint64, hash commo
 					return nil, err
 				}
 
-				// new snap shot
 				snap = newSnapshot(p.config, p.signatures, number, hash, validators, p.ethAPI)
 				if err := snap.store(p.db); err != nil {
 					return nil, err
@@ -466,6 +465,24 @@ func (p *Parlia) snapshot(chain consensus.ChainReader, number uint64, hash commo
 				log.Info("Stored checkpoint snapshot to disk", "number", number, "hash", hash)
 				break
 			}
+		}
+
+		// If we're at the PrimordialPulseBlock, snapshot the initial state from ParliaConfig.
+		// This will only occur for a non-zero primordial block, which indicates a fork of an existing chain.
+		// In such a case we initialize the validator snapshot from ParliaConfig instead of genesis block headers.
+		if number == p.chainConfig.PrimordialPulseBlock.Uint64() {
+			validators, err := p.initializeValidators()
+			if err != nil {
+				return nil, err
+			}
+
+			snap = newSnapshot(p.config, p.signatures, number, hash, validators, p.ethAPI)
+
+			// Store the snapshot to cache instead of disk since the block may or may not fall on the checkpointInterval.
+			// The snap will load from cache, or worst case be reconstructed from config again.
+			p.recentSnaps.Add(snap.Hash, snap)
+			log.Info("Added primordial pulse snapshot to cache", "number", number, "hash", hash)
+			break
 		}
 
 		// No snapshot for this header, gather the header and move backward
@@ -652,7 +669,7 @@ func (p *Parlia) Finalize(chain consensus.ChainReader, header *types.Header, sta
 	}
 	// If the block is a epoch end block, verify the validator list
 	// The verification can only be done when the state is ready, it can't be done in VerifyHeader.
-	if header.Number.Uint64()%p.config.Epoch == 0 {
+	if number%p.config.Epoch == 0 {
 		newValidators, err := p.getCurrentValidators(header.ParentHash)
 		if err != nil {
 			return err
