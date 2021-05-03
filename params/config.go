@@ -413,9 +413,15 @@ func (c *CliqueConfig) String() string {
 
 // ParliaConfig is the consensus engine configs for proof-of-staked-authority based sealing.
 type ParliaConfig struct {
-	Period         uint64   `json:"period"`                                     // Number of seconds between blocks to enforce
-	Epoch          uint64   `json:"epoch"`                                      // Epoch length to update validatorSet
-	InitValidators []string `json:"initValidators,omitempty" toml:",omitempty"` // An array of consensus addresses of the initial validatorSet, used in the PrimordialPulseBlock only.
+	Period          uint64            `json:"period"`                                      // Number of seconds between blocks to enforce
+	Epoch           uint64            `json:"epoch"`                                       // Epoch length to update validatorSet
+	InitValidators  []string          `json:"initValidators,omitempty" toml:",omitempty"`  // The list of consensus addresses for the initial validatorSet, used for the PrimordialPulseBlock only
+	SystemContracts *[]SystemContract `json:"systemContracts,omitempty" toml:",omitempty"` // The list of system contracts to deploy during, used for the PrimordialPulseBlock only
+}
+
+type SystemContract struct {
+	Addr string `json:"addr"`
+	Code string `json:"code"`
 }
 
 // String implements the stringer interface, returning the consensus engine details.

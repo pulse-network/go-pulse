@@ -2,6 +2,7 @@ package systemcontracts
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -41,9 +42,9 @@ func init() {
 	// reserved for future use to instantiate Upgrade vars
 }
 
-func UpgradeBuildInSystemContract(config *params.ChainConfig, blockNumber *big.Int, statedb *state.StateDB) {
+func UpgradeBuildInSystemContract(config *params.ChainConfig, blockNumber *big.Int, statedb *state.StateDB) error {
 	if config == nil || blockNumber == nil || statedb == nil {
-		return
+		return nil
 	}
 	var network string
 	switch GenesisHash {
@@ -60,12 +61,36 @@ func UpgradeBuildInSystemContract(config *params.ChainConfig, blockNumber *big.I
 
 	logger := log.New("system-contract-upgrade", network)
 
-	// remove when adding first update
-	logger.Debug("No system contract updates to apply", "height", blockNumber.String())
+	switch blockNumber {
+	case config.PrimordialPulseBlock:
+		configs, err := primordialPulseUpgrade(config)
+		if err != nil {
+			return err
+		}
+		applySystemContractUpgrade(&Upgrade{
+			UpgradeName: "PrimordialPulse",
+			Configs:     configs,
+		}, blockNumber, statedb, logger)
+	default:
+		logger.Debug("No system contract updates to apply", "height", blockNumber.String())
+	}
+	return nil
+}
 
-	/*
-		apply upgrades
-	*/
+func primordialPulseUpgrade(config *params.ChainConfig) ([]*UpgradeConfig, error) {
+	if config.Parlia.SystemContracts == nil {
+		return nil, errors.New("Missing systemContracts in parlia config for PrimordialPulse fork")
+	}
+
+	upgrades := make([]*UpgradeConfig, len(*config.Parlia.SystemContracts))
+	for i, contract := range *config.Parlia.SystemContracts {
+		upgrades[i] = &UpgradeConfig{
+			ContractAddr: common.HexToAddress(contract.Addr),
+			Code:         contract.Code,
+		}
+	}
+
+	return upgrades, nil
 }
 
 func applySystemContractUpgrade(upgrade *Upgrade, blockNumber *big.Int, statedb *state.StateDB, logger log.Logger) {

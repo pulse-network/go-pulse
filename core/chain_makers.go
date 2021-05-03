@@ -208,7 +208,9 @@ func GenerateChain(config *params.ChainConfig, parent *types.Block, engine conse
 		if config.DAOForkSupport && config.DAOForkBlock != nil && config.DAOForkBlock.Cmp(b.header.Number) == 0 {
 			misc.ApplyDAOHardFork(statedb)
 		}
-		systemcontracts.UpgradeBuildInSystemContract(config, b.header.Number, statedb)
+		if err := systemcontracts.UpgradeBuildInSystemContract(config, b.header.Number, statedb); err != nil {
+			panic(err)
+		}
 		// Execute any user modifications to the block
 		if gen != nil {
 			gen(i, b)

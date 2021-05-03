@@ -336,8 +336,21 @@ func (p *Parlia) verifyHeader(chain consensus.ChainReader, header *types.Header,
 		return errExtraValidators
 	}
 
-	if isEpoch && signersBytes%validatorBytesLength != 0 {
-		return errInvalidSpanValidators
+	if isEpoch {
+		snap, err := p.snapshot(chain, number-1, header.ParentHash, nil)
+		if err != nil {
+			return err
+		}
+
+		validatorsBytes, err := p.getEpochValidatorBytes(header, snap)
+		if err != nil {
+			return err
+		}
+
+		extraSuffix := len(header.Extra) - extraSeal
+		if !bytes.Equal(header.Extra[extraVanity:extraSuffix], validatorsBytes) {
+			return errMismatchingEpochValidators
+		}
 	}
 
 	// Ensure that the mix digest is zero as we don't have fork protection currently
@@ -466,11 +479,11 @@ func (p *Parlia) snapshot(chain consensus.ChainReader, number uint64, hash commo
 			}
 		}
 
-		// If we're at the PrimordialPulseBlock, snapshot the initial state from ParliaConfig.
+		// If we're at the PrimordialPulseBlock, snapshot the initial state from the validator contract.
 		// This will only occur for a non-zero primordial block, which indicates a fork of an existing chain.
 		// In such a case we initialize the validator snapshot from ParliaConfig instead of genesis block headers.
 		if number == p.chainConfig.PrimordialPulseBlock.Uint64() {
-			validators, err := p.initializeValidators()
+			validators, err := p.initPulsors()
 			if err != nil {
 				return nil, err
 			}
@@ -663,23 +676,11 @@ func (p *Parlia) Finalize(chain consensus.ChainReader, header *types.Header, sta
 	if !snap.isMajorityFork(hex.EncodeToString(nextForkHash[:])) {
 		log.Debug("there is a possible fork, and your client is not the majority. Please check...", "nextForkHash", hex.EncodeToString(nextForkHash[:]))
 	}
-	// If the block is a epoch end block, verify the validator list
-	// The verification can only be done when the state is ready, it can't be done in VerifyHeader.
-	if number%p.config.Epoch == 0 {
-		validatorsBytes, err := p.getEpochValidatorBytes(header, snap)
-		if err != nil {
-			return err
-		}
 
-		extraSuffix := len(header.Extra) - extraSeal
-		if !bytes.Equal(header.Extra[extraVanity:extraSuffix], validatorsBytes) {
-			return errMismatchingEpochValidators
-		}
-	}
 	// No block rewards in PoA, so the state remains as is and uncles are dropped
 	cx := chainContext{Chain: chain, parlia: p}
 	if header.Number.Cmp(common.Big1) == 0 {
-		err := p.initContract(state, header, cx, txs, receipts, systemTxs, usedGas, false)
+		err := p.initContracts(state, header, cx, txs, receipts, systemTxs, usedGas, false)
 		if err != nil {
 			log.Error("init contract failed")
 		}
@@ -702,9 +703,16 @@ func (p *Parlia) Finalize(chain consensus.ChainReader, header *types.Header, sta
 			}
 		}
 	}
+
+	// handle initial allocations for the primordialPulse fork
+	if header.Number.Cmp(p.chainConfig.PrimordialPulseBlock) == 0 {
+		if err := p.primordialPulseAlloctions(state); err != nil {
+			panic(err)
+		}
+	}
+
 	val := header.Coinbase
-	err = p.distributeIncoming(val, state, header, cx, txs, receipts, systemTxs, usedGas, false)
-	if err != nil {
+	if err := p.distributeIncoming(val, state, header, cx, txs, receipts, systemTxs, usedGas, false); err != nil {
 		panic(err)
 	}
 	if len(*systemTxs) > 0 {
@@ -727,8 +735,8 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainReader, header *types.
 	if receipts == nil {
 		receipts = make([]*types.Receipt, 0)
 	}
-	if header.Number.Cmp(common.Big1) == 0 {
-		err := p.initContract(state, header, cx, &txs, &receipts, nil, &header.GasUsed, true)
+	if header.Number.Cmp(common.Big1) == 0 || header.Number.Cmp(p.chainConfig.PrimordialPulseBlock) == 0 {
+		err := p.initContracts(state, header, cx, &txs, &receipts, nil, &header.GasUsed, true)
 		if err != nil {
 			log.Error("init contract failed")
 		}
@@ -977,8 +985,8 @@ func (p *Parlia) slash(spoiledVal common.Address, state *state.StateDB, header *
 	return p.applyTransaction(msg, state, header, chain, txs, receipts, receivedTxs, usedGas, mining)
 }
 
-// init contract
-func (p *Parlia) initContract(state *state.StateDB, header *types.Header, chain core.ChainContext,
+// init contracts
+func (p *Parlia) initContracts(state *state.StateDB, header *types.Header, chain core.ChainContext,
 	txs *[]*types.Transaction, receipts *[]*types.Receipt, receivedTxs *[]*types.Transaction, usedGas *uint64, mining bool) error {
 	// method
 	method := "init"
@@ -1005,7 +1013,7 @@ func (p *Parlia) initContract(state *state.StateDB, header *types.Header, chain 
 	return nil
 }
 
-// slash spoiled validators
+// award funds to the validator
 func (p *Parlia) distributeToValidator(amount *big.Int, validator common.Address,
 	state *state.StateDB, header *types.Header, chain core.ChainContext,
 	txs *[]*types.Transaction, receipts *[]*types.Receipt, receivedTxs *[]*types.Transaction, usedGas *uint64, mining bool) error {
