@@ -415,7 +415,7 @@ func (c *CliqueConfig) String() string {
 type ParliaConfig struct {
 	Period          uint64            `json:"period"`                                      // Number of seconds between blocks to enforce
 	Epoch           uint64            `json:"epoch"`                                       // Epoch length to update validatorSet
-	InitValidators  []string          `json:"initValidators,omitempty" toml:",omitempty"`  // The list of consensus addresses for the initial validatorSet, used for the PrimordialPulseBlock only
+	InitValidators  *[]string         `json:"initValidators,omitempty" toml:",omitempty"`  // The list of consensus addresses for the initial validatorSet, used for the PrimordialPulseBlock only
 	SystemContracts *[]SystemContract `json:"systemContracts,omitempty" toml:",omitempty"` // The list of system contracts to deploy during, used for the PrimordialPulseBlock only
 }
 
