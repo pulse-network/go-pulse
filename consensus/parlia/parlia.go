@@ -10,7 +10,6 @@ import (
 	"math"
 	"math/big"
 	"math/rand"
-	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -624,15 +623,12 @@ func (p *Parlia) Prepare(chain consensus.ChainReader, header *types.Header) erro
 	header.Extra = append(header.Extra, nextForkHash[:]...)
 
 	if number%p.config.Epoch == 0 {
-		newValidators, err := p.getCurrentValidators(header.ParentHash)
+		newValidatorBytes, err := p.getEpochValidatorBytes(header, snap)
 		if err != nil {
 			return err
 		}
-		// sort validator by address
-		sort.Sort(validatorsAscending(newValidators))
-		for _, validator := range newValidators {
-			header.Extra = append(header.Extra, validator.Bytes()...)
-		}
+
+		header.Extra = append(header.Extra, newValidatorBytes...)
 	}
 
 	// add extra seal space
@@ -670,15 +666,9 @@ func (p *Parlia) Finalize(chain consensus.ChainReader, header *types.Header, sta
 	// If the block is a epoch end block, verify the validator list
 	// The verification can only be done when the state is ready, it can't be done in VerifyHeader.
 	if number%p.config.Epoch == 0 {
-		newValidators, err := p.getCurrentValidators(header.ParentHash)
+		validatorsBytes, err := p.getEpochValidatorBytes(header, snap)
 		if err != nil {
 			return err
-		}
-		// sort validator by address
-		sort.Sort(validatorsAscending(newValidators))
-		validatorsBytes := make([]byte, len(newValidators)*validatorBytesLength)
-		for i, validator := range newValidators {
-			copy(validatorsBytes[i*validatorBytesLength:], validator.Bytes())
 		}
 
 		extraSuffix := len(header.Extra) - extraSeal
