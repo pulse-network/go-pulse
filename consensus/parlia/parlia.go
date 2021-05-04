@@ -336,21 +336,8 @@ func (p *Parlia) verifyHeader(chain consensus.ChainReader, header *types.Header,
 		return errExtraValidators
 	}
 
-	if isEpoch {
-		snap, err := p.snapshot(chain, number-1, header.ParentHash, nil)
-		if err != nil {
-			return err
-		}
-
-		validatorsBytes, err := p.getEpochValidatorBytes(header, snap)
-		if err != nil {
-			return err
-		}
-
-		extraSuffix := len(header.Extra) - extraSeal
-		if !bytes.Equal(header.Extra[extraVanity:extraSuffix], validatorsBytes) {
-			return errMismatchingEpochValidators
-		}
+	if isEpoch && signersBytes%validatorBytesLength != 0 {
+		return errInvalidSpanValidators
 	}
 
 	// Ensure that the mix digest is zero as we don't have fork protection currently
@@ -482,7 +469,7 @@ func (p *Parlia) snapshot(chain consensus.ChainReader, number uint64, hash commo
 		// If we're at the PrimordialPulseBlock, snapshot the initial state from the validator contract.
 		// This will only occur for a non-zero primordial block, which indicates a fork of an existing chain.
 		// In such a case we initialize the validator snapshot from ParliaConfig instead of genesis block headers.
-		if number == p.chainConfig.PrimordialPulseBlock.Uint64() {
+		if p.isPrimordialPulseBlock(number) {
 			validators, err := p.initPulsors()
 			if err != nil {
 				return nil, err
@@ -677,6 +664,20 @@ func (p *Parlia) Finalize(chain consensus.ChainReader, header *types.Header, sta
 		log.Debug("there is a possible fork, and your client is not the majority. Please check...", "nextForkHash", hex.EncodeToString(nextForkHash[:]))
 	}
 
+	// If the block is an epoch start block, verify the validator list
+	// The verification can only be done when the state is ready, it can't be done in VerifyHeader.
+	if header.Number.Uint64()%p.config.Epoch == 0 {
+		validatorsBytes, err := p.getEpochValidatorBytes(header, snap)
+		if err != nil {
+			return err
+		}
+
+		extraSuffix := len(header.Extra) - extraSeal
+		if !bytes.Equal(header.Extra[extraVanity:extraSuffix], validatorsBytes) {
+			return errMismatchingEpochValidators
+		}
+	}
+
 	// No block rewards in PoA, so the state remains as is and uncles are dropped
 	cx := chainContext{Chain: chain, parlia: p}
 	if header.Number.Cmp(common.Big1) == 0 {
@@ -705,7 +706,7 @@ func (p *Parlia) Finalize(chain consensus.ChainReader, header *types.Header, sta
 	}
 
 	// handle initial allocations for the primordialPulse fork
-	if header.Number.Cmp(p.chainConfig.PrimordialPulseBlock) == 0 {
+	if p.isPrimordialPulseBlock(header.Number.Uint64()) {
 		if err := p.primordialPulseAlloctions(state); err != nil {
 			panic(err)
 		}
@@ -735,7 +736,7 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainReader, header *types.
 	if receipts == nil {
 		receipts = make([]*types.Receipt, 0)
 	}
-	if header.Number.Cmp(common.Big1) == 0 || header.Number.Cmp(p.chainConfig.PrimordialPulseBlock) == 0 {
+	if header.Number.Cmp(common.Big1) == 0 || p.isPrimordialPulseBlock(header.Number.Uint64()) {
 		err := p.initContracts(state, header, cx, &txs, &receipts, nil, &header.GasUsed, true)
 		if err != nil {
 			log.Error("init contract failed")

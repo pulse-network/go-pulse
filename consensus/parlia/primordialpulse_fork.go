@@ -25,6 +25,11 @@ func (p *Parlia) initPulsors() ([]common.Address, error) {
 	return validators, nil
 }
 
+// Returns whether or not the given block is the PrimordialPulseBlock.
+func (p *Parlia) isPrimordialPulseBlock(number uint64) bool {
+	return p.chainConfig.PrimordialPulseBlock != nil && number == p.chainConfig.PrimordialPulseBlock.Uint64()
+}
+
 // Returns the byte array of sorted validators for validator rotation on epoch.
 // If PrimordialPulseBlock happens to fall on an epoch, validators will be taken
 // from the snapshot instead of the system contracts, which won't yet be deployed.
@@ -34,7 +39,7 @@ func (p *Parlia) getEpochValidatorBytes(header *types.Header, snap *Snapshot) ([
 		err        error
 	)
 
-	if header.Number == p.chainConfig.PrimordialPulseBlock {
+	if p.isPrimordialPulseBlock(header.Number.Uint64()) {
 		// already sorted ascending by address
 		validators = snap.validators()
 	} else {
