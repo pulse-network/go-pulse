@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/state"
@@ -61,8 +62,7 @@ func UpgradeBuildInSystemContract(config *params.ChainConfig, blockNumber *big.I
 
 	logger := log.New("system-contract-upgrade", network)
 
-	switch blockNumber {
-	case config.PrimordialPulseBlock:
+	if config.IsPrimordialPulseBlock(blockNumber.Uint64()) {
 		configs, err := primordialPulseUpgrade(config)
 		if err != nil {
 			return err
@@ -71,9 +71,10 @@ func UpgradeBuildInSystemContract(config *params.ChainConfig, blockNumber *big.I
 			UpgradeName: "PrimordialPulse",
 			Configs:     configs,
 		}, blockNumber, statedb, logger)
-	default:
+	} else {
 		logger.Debug("No system contract updates to apply", "height", blockNumber.String())
 	}
+
 	return nil
 }
 
@@ -110,7 +111,7 @@ func applySystemContractUpgrade(upgrade *Upgrade, blockNumber *big.Int, statedb 
 			}
 		}
 
-		newContractCode, err := hex.DecodeString(cfg.Code)
+		newContractCode, err := hex.DecodeString(strings.TrimPrefix(cfg.Code, "0x"))
 		if err != nil {
 			panic(fmt.Errorf("failed to decode new contract code: %s", err.Error()))
 		}
