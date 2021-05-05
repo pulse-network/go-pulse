@@ -520,6 +520,12 @@ func (c *ChainConfig) IsEWASM(num *big.Int) bool {
 	return isForked(c.EWASMBlock, num)
 }
 
+// IsPrimordialPulseBlock returns whether or not the given block is the primordial pulse block.
+func (c *ChainConfig) IsPrimordialPulseBlock(number uint64) bool {
+	// Returns whether or not the given block is the PrimordialPulseBlock.
+	return c.PrimordialPulseBlock != nil && number == c.PrimordialPulseBlock.Uint64()
+}
+
 // CheckCompatible checks whether scheduled fork transitions have been imported
 // with a mismatching chain configuration.
 func (c *ChainConfig) CheckCompatible(newcfg *ChainConfig, height uint64) *ConfigCompatError {
