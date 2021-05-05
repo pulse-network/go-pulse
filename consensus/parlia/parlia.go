@@ -450,14 +450,22 @@ func (p *Parlia) snapshot(chain consensus.ChainReader, number uint64, hash commo
 				// get checkpoint data
 				hash := checkpoint.Hash()
 
-				validatorBytes := checkpoint.Extra[extraVanity : len(checkpoint.Extra)-extraSeal]
-				// get validators from headers
-				validators, err := ParseValidators(validatorBytes)
-				if err != nil {
-					return nil, err
+				if p.chainConfig.PrimordialPulseBlock != nil && p.chainConfig.PrimordialPulseBlock.Cmp(common.Big0) > 0 {
+					// If we're at the zero block, but there is a PrimordialPulse fork in our future,
+					// this implies that we're behind the forked chain. Suppose an empty set of validators
+					// and wait for chain synchronization.
+					snap = newSnapshot(p.config, p.signatures, number, hash, []common.Address{{}}, p.ethAPI)
+				} else {
+					// Initialize the validators from the genesis block extra-data.
+					validatorBytes := checkpoint.Extra[extraVanity : len(checkpoint.Extra)-extraSeal]
+					validators, err := ParseValidators(validatorBytes)
+					if err != nil {
+						return nil, err
+					}
+
+					snap = newSnapshot(p.config, p.signatures, number, hash, validators, p.ethAPI)
 				}
 
-				snap = newSnapshot(p.config, p.signatures, number, hash, validators, p.ethAPI)
 				if err := snap.store(p.db); err != nil {
 					return nil, err
 				}
