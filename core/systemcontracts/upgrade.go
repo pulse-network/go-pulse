@@ -100,7 +100,7 @@ func applySystemContractUpgrade(upgrade *Upgrade, blockNumber *big.Int, statedb 
 		return
 	}
 
-	logger.Info(fmt.Sprintf("Apply upgrade %s at height %d", upgrade.UpgradeName, blockNumber.Int64()))
+	logger.Info(fmt.Sprintf("Applying upgrade %s at height %d", upgrade.UpgradeName, blockNumber.Int64()))
 	for _, cfg := range upgrade.Configs {
 		logger.Info(fmt.Sprintf("Upgrade contract %s to commit %s", cfg.ContractAddr.String(), cfg.CommitUrl))
 
