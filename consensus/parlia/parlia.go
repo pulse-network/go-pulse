@@ -960,7 +960,7 @@ func (p *Parlia) CalcDifficulty(chain consensus.ChainReader, time uint64, parent
 	return calcDifficulty(snap, p.val)
 }
 
-// CalcDifficulty is the difficulty adjustment algorithm. It returns the difficulty
+// calcDifficulty is the difficulty adjustment algorithm. It returns the difficulty
 // that a new block should have based on the previous blocks in the chain and the
 // current signer.
 func calcDifficulty(snap *Snapshot, signer common.Address) *big.Int {
