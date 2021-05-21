@@ -526,6 +526,12 @@ func (c *ChainConfig) IsPrimordialPulseBlock(number uint64) bool {
 	return c.PrimordialPulseBlock != nil && number == c.PrimordialPulseBlock.Uint64()
 }
 
+// Returns true if there is a PrimordialPulse block in the future, indicating this chain
+// should still be evaluated using the ethash consensus engine.
+func (c *ChainConfig) PrimordialPulseAhead(number *big.Int) bool {
+	return c.PrimordialPulseBlock != nil && c.PrimordialPulseBlock.Cmp(number) > 0
+}
+
 // CheckCompatible checks whether scheduled fork transitions have been imported
 // with a mismatching chain configuration.
 func (c *ChainConfig) CheckCompatible(newcfg *ChainConfig, height uint64) *ConfigCompatError {
