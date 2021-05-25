@@ -29,6 +29,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/internal/ethapi"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 	lru "github.com/hashicorp/golang-lru"
 )
@@ -141,6 +142,7 @@ func (s *Snapshot) isMajorityFork(forkHash string) bool {
 	return ally > len(s.RecentForkHashes)/2
 }
 
+// apply creates a new authorization snapshot by applying the given headers to the original one
 func (s *Snapshot) apply(headers []*types.Header, chain consensus.ChainReader, parents []*types.Header, chainId *big.Int) (*Snapshot, error) {
 	// Allow passing in no headers for cleaner code
 	if len(headers) == 0 {
@@ -188,37 +190,43 @@ func (s *Snapshot) apply(headers []*types.Header, chain consensus.ChainReader, p
 		}
 		snap.Recents[number] = validator
 		// change validator set
-		if number > 0 && number%s.config.Epoch == uint64(len(snap.Validators)/2) {
-			checkpointHeader := FindAncientHeader(header, uint64(len(snap.Validators)/2), chain, parents)
+		offset := uint64(len(snap.Validators) / 2)
+		if number > 0 && number%s.config.Epoch == offset {
+			checkpointHeader := FindAncientHeader(header, offset, chain, parents)
 			if checkpointHeader == nil {
 				return nil, consensus.ErrUnknownAncestor
 			}
-
-			validatorBytes := checkpointHeader.Extra[extraVanity : len(checkpointHeader.Extra)-extraSeal]
-			// get validators from headers and use that for new validator set
-			newValArr, err := ParseValidators(validatorBytes)
-			if err != nil {
-				return nil, err
-			}
-			newVals := make(map[common.Address]struct{}, len(newValArr))
-			for _, val := range newValArr {
-				newVals[val] = struct{}{}
-			}
-			oldLimit := len(snap.Validators)/2 + 1
-			newLimit := len(newVals)/2 + 1
-			if newLimit < oldLimit {
-				for i := 0; i < oldLimit-newLimit; i++ {
-					delete(snap.Recents, number-uint64(newLimit)-uint64(i))
+			if len(checkpointHeader.Extra) >= extraVanity+extraSeal {
+				validatorBytes := checkpointHeader.Extra[extraVanity : len(checkpointHeader.Extra)-extraSeal]
+				// get validators from headers and use that for new validator set
+				newValArr, err := ParseValidators(validatorBytes)
+				if err != nil {
+					return nil, err
 				}
-			}
-			oldLimit = len(snap.Validators)
-			newLimit = len(newVals)
-			if newLimit < oldLimit {
-				for i := 0; i < oldLimit-newLimit; i++ {
-					delete(snap.RecentForkHashes, number-uint64(newLimit)-uint64(i))
+				newVals := make(map[common.Address]struct{}, len(newValArr))
+				for _, val := range newValArr {
+					newVals[val] = struct{}{}
 				}
+				oldLimit := len(snap.Validators)/2 + 1
+				newLimit := len(newVals)/2 + 1
+				if newLimit < oldLimit {
+					for i := 0; i < oldLimit-newLimit; i++ {
+						delete(snap.Recents, number-uint64(newLimit)-uint64(i))
+					}
+				}
+				oldLimit = len(snap.Validators)
+				newLimit = len(newVals)
+				if newLimit < oldLimit {
+					for i := 0; i < oldLimit-newLimit; i++ {
+						delete(snap.RecentForkHashes, number-uint64(newLimit)-uint64(i))
+					}
+				}
+				snap.Validators = newVals
+			} else {
+				// this can potentially happen one time only for a new chain, if the most recent epoch block was pre-fork
+				// this entirely depends on which block number the fork occurs along with the parlia.epoch config
+				log.Warn("Skipping validator rotation: epoch header malformed", "number", number, "epoch", checkpointHeader.Number)
 			}
-			snap.Validators = newVals
 		}
 		snap.RecentForkHashes[number] = hex.EncodeToString(header.Extra[extraVanity-nextForkHashSize : extraVanity])
 	}
