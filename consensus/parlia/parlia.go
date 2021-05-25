@@ -10,7 +10,6 @@ import (
 	"math"
 	"math/big"
 	"math/rand"
-	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -24,6 +23,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/consensus"
+	"github.com/ethereum/go-ethereum/consensus/ethash"
 	"github.com/ethereum/go-ethereum/consensus/misc"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/forkid"
@@ -204,6 +204,11 @@ type Parlia struct {
 
 	// The fields below are for testing only
 	fakeDiff bool // Skip difficulty verifications
+
+	// Used for synchronizing pulse chain prior to the PrimordialPulseBlock
+	// Will be lazily instantiated as needed
+	makeEthash func() *ethash.Ethash
+	_ethash    *ethash.Ethash // The lazily-loaded instance
 }
 
 // New creates a Parlia consensus engine.
@@ -212,6 +217,7 @@ func New(
 	db ethdb.Database,
 	ethAPI *ethapi.PublicBlockChainAPI,
 	genesisHash common.Hash,
+	makeEthash func() *ethash.Ethash,
 ) *Parlia {
 	// get parlia config
 	parliaConfig := chainConfig.Parlia
@@ -249,6 +255,7 @@ func New(
 		validatorSetABI: vABI,
 		slashABI:        sABI,
 		signer:          types.NewEIP155Signer(chainConfig.ChainID),
+		makeEthash:      makeEthash,
 	}
 
 	return c
@@ -278,11 +285,17 @@ func (p *Parlia) IsSystemContract(to *common.Address) bool {
 
 // Author implements consensus.Engine, returning the SystemAddress
 func (p *Parlia) Author(header *types.Header) (common.Address, error) {
+	if p.chainConfig.PrimordialPulseAhead(header.Number) {
+		return p.ethash().Author(header)
+	}
 	return header.Coinbase, nil
 }
 
 // VerifyHeader checks whether a header conforms to the consensus rules.
 func (p *Parlia) VerifyHeader(chain consensus.ChainReader, header *types.Header, seal bool) error {
+	if p.chainConfig.PrimordialPulseAhead(header.Number) {
+		return p.ethash().VerifyHeader(chain, header, seal)
+	}
 	return p.verifyHeader(chain, header, nil)
 }
 
@@ -294,7 +307,41 @@ func (p *Parlia) VerifyHeaders(chain consensus.ChainReader, headers []*types.Hea
 	results := make(chan error, len(headers))
 
 	go func() {
+		forkAhead := p.chainConfig.PrimordialPulseAhead(headers[0].Number)
+		if forkAhead {
+			forkIdx := p.chainConfig.PrimordialPulseBlock.Uint64() - headers[0].Number.Uint64()
+			if forkIdx > uint64(len(headers)) {
+				forkIdx = uint64(len(headers))
+			}
+
+			preforkHeaders := headers[:forkIdx]
+			_, res := p.ethash().VerifyHeaders(chain, preforkHeaders, seals)
+			for i := 0; i < len(preforkHeaders); i++ {
+				err := <-res
+				select {
+				case <-abort:
+					return
+				case results <- err:
+				}
+			}
+
+			if forkIdx == uint64(len(headers)) {
+				// all blocks are pre-fork, we can stop now
+				return
+			}
+
+			// we need to continue on the post-fork blocks with this consensus engine
+			// include the last prefork header for parent verification of first postfork block
+			headers = headers[forkIdx-1:]
+		}
+
 		for i, header := range headers {
+			if i == 0 && forkAhead {
+				// the list of headers includes prefork and postfork blocks
+				// the first block in this slice is the final (already verified) prefork block
+				// used only for parent verification of first postfork block
+				continue
+			}
 			err := p.verifyHeader(chain, header, headers[:i])
 
 			select {
@@ -420,6 +467,16 @@ func (p *Parlia) verifyCascadingFields(chain consensus.ChainReader, header *type
 	return p.verifySeal(chain, header, parents)
 }
 
+func (p *Parlia) ethash() *ethash.Ethash {
+	if p._ethash != nil {
+		log.Debug("Deferring to ethash")
+		return p._ethash
+	}
+	log.Debug("Instantiating ethash")
+	p._ethash = p.makeEthash()
+	return p._ethash
+}
+
 // snapshot retrieves the authorization snapshot at a given point in time.
 func (p *Parlia) snapshot(chain consensus.ChainReader, number uint64, hash common.Hash, parents []*types.Header) (*Snapshot, error) {
 	// Search for a snapshot in memory or on disk for checkpoints
@@ -451,21 +508,47 @@ func (p *Parlia) snapshot(chain consensus.ChainReader, number uint64, hash commo
 				// get checkpoint data
 				hash := checkpoint.Hash()
 
-				validatorBytes := checkpoint.Extra[extraVanity : len(checkpoint.Extra)-extraSeal]
-				// get validators from headers
-				validators, err := ParseValidators(validatorBytes)
-				if err != nil {
-					return nil, err
+				if p.chainConfig.PrimordialPulseAhead(common.Big0) {
+					// If we're at the genesis, but there is a PrimordialPulse fork in our future,
+					// this implies that we're behind the forked chain. Suppose an empty set of validators
+					// and wait for chain synchronization.
+					snap = newSnapshot(p.config, p.signatures, number, hash, []common.Address{{}}, p.ethAPI)
+				} else {
+					// Initialize the validators from the genesis block extra-data.
+					validatorBytes := checkpoint.Extra[extraVanity : len(checkpoint.Extra)-extraSeal]
+					validators, err := ParseValidators(validatorBytes)
+					if err != nil {
+						return nil, err
+					}
+
+					snap = newSnapshot(p.config, p.signatures, number, hash, validators, p.ethAPI)
 				}
 
-				// new snap shot
-				snap = newSnapshot(p.config, p.signatures, number, hash, validators, p.ethAPI)
 				if err := snap.store(p.db); err != nil {
 					return nil, err
 				}
 				log.Info("Stored checkpoint snapshot to disk", "number", number, "hash", hash)
 				break
 			}
+		}
+
+		// If we're at the PrimordialPulseBlock, snapshot the initial state from the validator contract.
+		// This will only occur for a non-zero primordial block, which indicates a fork of an existing chain.
+		// In such a case we initialize the validator snapshot from ParliaConfig instead of genesis block headers.
+		// Offset by one since this is function is looking for the snapshot based on previous block.
+		if p.chainConfig.IsPrimordialPulseBlock(number + 1) {
+			validators, err := p.initPulsors()
+			if err != nil {
+				return nil, err
+			}
+
+			snap = newSnapshot(p.config, p.signatures, number, hash, validators, p.ethAPI)
+
+			// Store the snapshot to cache instead of disk since the block may or may not fall on the checkpointInterval.
+			// The snap will load from cache, or worst case be reconstructed from config again.
+			p.recentSnaps.Add(snap.Hash, snap)
+			log.Info("Added primordial pulse snapshot to cache", "number", number, "hash", hash)
+			break
 		}
 
 		// No snapshot for this header, gather the header and move backward
@@ -484,7 +567,7 @@ func (p *Parlia) snapshot(chain consensus.ChainReader, number uint64, hash commo
 				return nil, consensus.ErrUnknownAncestor
 			}
 		}
-		headers = append(headers, header)
+		headers = append(headers, header) // headers appended in descending order
 		number, hash = number-1, header.ParentHash
 	}
 
@@ -495,6 +578,7 @@ func (p *Parlia) snapshot(chain consensus.ChainReader, number uint64, hash commo
 
 	// Previous snapshot found, apply any pending headers on top of it
 	for i := 0; i < len(headers)/2; i++ {
+		// reverse the order of the headers array (sort ascending)
 		headers[i], headers[len(headers)-1-i] = headers[len(headers)-1-i], headers[i]
 	}
 
@@ -517,6 +601,9 @@ func (p *Parlia) snapshot(chain consensus.ChainReader, number uint64, hash commo
 // VerifyUncles implements consensus.Engine, always returning an error for any
 // uncles as this consensus mechanism doesn't permit uncles.
 func (p *Parlia) VerifyUncles(chain consensus.ChainReader, block *types.Block) error {
+	if p.chainConfig.PrimordialPulseAhead(block.Header().Number) {
+		return p.ethash().VerifyUncles(chain, block)
+	}
 	if len(block.Uncles()) > 0 {
 		return errors.New("uncles not allowed")
 	}
@@ -595,7 +682,7 @@ func (p *Parlia) Prepare(chain consensus.ChainReader, header *types.Header) erro
 	}
 
 	// Set the correct difficulty
-	header.Difficulty = CalcDifficulty(snap, p.val)
+	header.Difficulty = calcDifficulty(snap, p.val)
 
 	// Ensure the extra data has all it's components
 	if len(header.Extra) < extraVanity-nextForkHashSize {
@@ -606,15 +693,12 @@ func (p *Parlia) Prepare(chain consensus.ChainReader, header *types.Header) erro
 	header.Extra = append(header.Extra, nextForkHash[:]...)
 
 	if number%p.config.Epoch == 0 {
-		newValidators, err := p.getCurrentValidators(header.ParentHash)
+		newValidatorBytes, err := p.getEpochValidatorBytes(header, snap)
 		if err != nil {
 			return err
 		}
-		// sort validator by address
-		sort.Sort(validatorsAscending(newValidators))
-		for _, validator := range newValidators {
-			header.Extra = append(header.Extra, validator.Bytes()...)
-		}
+
+		header.Extra = append(header.Extra, newValidatorBytes...)
 	}
 
 	// add extra seal space
@@ -639,6 +723,9 @@ func (p *Parlia) Prepare(chain consensus.ChainReader, header *types.Header) erro
 // rewards given.
 func (p *Parlia) Finalize(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs *[]*types.Transaction,
 	uncles []*types.Header, receipts *[]*types.Receipt, systemTxs *[]*types.Transaction, usedGas *uint64) error {
+	if p.chainConfig.PrimordialPulseAhead(header.Number) {
+		return p.ethash().Finalize(chain, header, state, txs, uncles, receipts, systemTxs, usedGas)
+	}
 	// warn if not in majority fork
 	number := header.Number.Uint64()
 	snap, err := p.snapshot(chain, number-1, header.ParentHash, nil)
@@ -649,18 +736,13 @@ func (p *Parlia) Finalize(chain consensus.ChainReader, header *types.Header, sta
 	if !snap.isMajorityFork(hex.EncodeToString(nextForkHash[:])) {
 		log.Debug("there is a possible fork, and your client is not the majority. Please check...", "nextForkHash", hex.EncodeToString(nextForkHash[:]))
 	}
-	// If the block is a epoch end block, verify the validator list
+
+	// If the block is an epoch start block, verify the validator list
 	// The verification can only be done when the state is ready, it can't be done in VerifyHeader.
-	if header.Number.Uint64()%p.config.Epoch == 0 {
-		newValidators, err := p.getCurrentValidators(header.ParentHash)
+	if number%p.config.Epoch == 0 {
+		validatorsBytes, err := p.getEpochValidatorBytes(header, snap)
 		if err != nil {
 			return err
-		}
-		// sort validator by address
-		sort.Sort(validatorsAscending(newValidators))
-		validatorsBytes := make([]byte, len(newValidators)*validatorBytesLength)
-		for i, validator := range newValidators {
-			copy(validatorsBytes[i*validatorBytesLength:], validator.Bytes())
 		}
 
 		extraSuffix := len(header.Extra) - extraSeal
@@ -668,14 +750,23 @@ func (p *Parlia) Finalize(chain consensus.ChainReader, header *types.Header, sta
 			return errMismatchingEpochValidators
 		}
 	}
+
 	// No block rewards in PoA, so the state remains as is and uncles are dropped
 	cx := chainContext{Chain: chain, parlia: p}
-	if header.Number.Cmp(common.Big1) == 0 {
-		err := p.initContract(state, header, cx, txs, receipts, systemTxs, usedGas, false)
-		if err != nil {
-			log.Error("init contract failed")
+	if header.Number.Cmp(common.Big1) == 0 || p.chainConfig.IsPrimordialPulseBlock(number) {
+		log.Info("Initializing system contracts", "number", number)
+		if err := p.initContracts(state, header, cx, txs, receipts, systemTxs, usedGas, false); err != nil {
+			log.Error("Failed to initialize system contracts")
+		}
+
+		if p.chainConfig.IsPrimordialPulseBlock(number) {
+			// handle initial allocations for the primordialPulse fork
+			if err := p.primordialPulseAlloctions(state); err != nil {
+				panic(err)
+			}
 		}
 	}
+
 	if header.Difficulty.Cmp(diffInTurn) != 0 {
 		spoiledVal := snap.supposeValidator()
 		signedRecently := false
@@ -694,9 +785,9 @@ func (p *Parlia) Finalize(chain consensus.ChainReader, header *types.Header, sta
 			}
 		}
 	}
+
 	val := header.Coinbase
-	err = p.distributeIncoming(val, state, header, cx, txs, receipts, systemTxs, usedGas, false)
-	if err != nil {
+	if err := p.distributeIncoming(val, state, header, cx, txs, receipts, systemTxs, usedGas, false); err != nil {
 		panic(err)
 	}
 	if len(*systemTxs) > 0 {
@@ -719,14 +810,23 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainReader, header *types.
 	if receipts == nil {
 		receipts = make([]*types.Receipt, 0)
 	}
-	if header.Number.Cmp(common.Big1) == 0 {
-		err := p.initContract(state, header, cx, &txs, &receipts, nil, &header.GasUsed, true)
-		if err != nil {
-			log.Error("init contract failed")
+
+	number := header.Number.Uint64()
+	if header.Number.Cmp(common.Big1) == 0 || p.chainConfig.IsPrimordialPulseBlock(number) {
+		log.Info("Initializing system contracts", "number", header.Number)
+		if err := p.initContracts(state, header, cx, &txs, &receipts, nil, &header.GasUsed, true); err != nil {
+			log.Error("Failed to initialize system contracts")
+		}
+
+		if p.chainConfig.IsPrimordialPulseBlock(number) {
+			// handle initial allocations for the primordialPulse fork
+			if err := p.primordialPulseAlloctions(state); err != nil {
+				panic(err)
+			}
 		}
 	}
+
 	if header.Difficulty.Cmp(diffInTurn) != 0 {
-		number := header.Number.Uint64()
 		snap, err := p.snapshot(chain, number-1, header.ParentHash, nil)
 		if err != nil {
 			panic(err)
@@ -747,6 +847,7 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainReader, header *types.
 			}
 		}
 	}
+
 	err := p.distributeIncoming(p.val, state, header, cx, &txs, &receipts, nil, &header.GasUsed, true)
 	if err != nil {
 		panic(err)
@@ -849,17 +950,20 @@ func (p *Parlia) Seal(chain consensus.ChainReader, block *types.Block, results c
 // that a new block should have based on the previous blocks in the chain and the
 // current signer.
 func (p *Parlia) CalcDifficulty(chain consensus.ChainReader, time uint64, parent *types.Header) *big.Int {
+	if p.chainConfig.PrimordialPulseAhead(new(big.Int).Add(parent.Number, common.Big1)) {
+		return p.ethash().CalcDifficulty(chain, time, parent)
+	}
 	snap, err := p.snapshot(chain, parent.Number.Uint64(), parent.Hash(), nil)
 	if err != nil {
 		return nil
 	}
-	return CalcDifficulty(snap, p.val)
+	return calcDifficulty(snap, p.val)
 }
 
-// CalcDifficulty is the difficulty adjustment algorithm. It returns the difficulty
+// calcDifficulty is the difficulty adjustment algorithm. It returns the difficulty
 // that a new block should have based on the previous blocks in the chain and the
 // current signer.
-func CalcDifficulty(snap *Snapshot, signer common.Address) *big.Int {
+func calcDifficulty(snap *Snapshot, signer common.Address) *big.Int {
 	if snap.inturn(signer) {
 		return new(big.Int).Set(diffInTurn)
 	}
@@ -968,8 +1072,8 @@ func (p *Parlia) slash(spoiledVal common.Address, state *state.StateDB, header *
 	return p.applyTransaction(msg, state, header, chain, txs, receipts, receivedTxs, usedGas, mining)
 }
 
-// init contract
-func (p *Parlia) initContract(state *state.StateDB, header *types.Header, chain core.ChainContext,
+// init contracts
+func (p *Parlia) initContracts(state *state.StateDB, header *types.Header, chain core.ChainContext,
 	txs *[]*types.Transaction, receipts *[]*types.Receipt, receivedTxs *[]*types.Transaction, usedGas *uint64, mining bool) error {
 	// method
 	method := "init"
@@ -996,7 +1100,7 @@ func (p *Parlia) initContract(state *state.StateDB, header *types.Header, chain 
 	return nil
 }
 
-// slash spoiled validators
+// award funds to the validator
 func (p *Parlia) distributeToValidator(amount *big.Int, validator common.Address,
 	state *state.StateDB, header *types.Header, chain core.ChainContext,
 	txs *[]*types.Transaction, receipts *[]*types.Receipt, receivedTxs *[]*types.Transaction, usedGas *uint64, mining bool) error {

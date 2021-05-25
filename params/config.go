@@ -274,21 +274,42 @@ var (
 		},
 	}
 
+	PulseChainConfig = &ChainConfig{
+		ChainID:              big.NewInt(933),
+		HomesteadBlock:       big.NewInt(0),
+		EIP150Block:          big.NewInt(0),
+		EIP155Block:          big.NewInt(0),
+		EIP158Block:          big.NewInt(0),
+		ByzantiumBlock:       big.NewInt(0),
+		ConstantinopleBlock:  big.NewInt(0),
+		PetersburgBlock:      big.NewInt(0),
+		IstanbulBlock:        big.NewInt(0),
+		MuirGlacierBlock:     big.NewInt(0),
+		RamanujanBlock:       big.NewInt(0),
+		NielsBlock:           big.NewInt(0),
+		MirrorSyncBlock:      big.NewInt(0),
+		PrimordialPulseBlock: big.NewInt(0),
+		Parlia: &ParliaConfig{
+			Period: 3,
+			Epoch:  200,
+		},
+	}
+
 	// AllEthashProtocolChanges contains every protocol change (EIPs) introduced
 	// and accepted by the Ethereum core developers into the Ethash consensus.
 	//
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
-	AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, nil, nil, new(EthashConfig), nil, nil}
+	AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, nil, nil, nil, new(EthashConfig), nil, nil}
 
 	// AllCliqueProtocolChanges contains every protocol change (EIPs) introduced
 	// and accepted by the Ethereum core developers into the Clique consensus.
 	//
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
-	AllCliqueProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, nil, nil, nil, &CliqueConfig{Period: 0, Epoch: 30000}, nil}
+	AllCliqueProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, nil, nil, nil, nil, &CliqueConfig{Period: 0, Epoch: 30000}, nil}
 
-	TestChainConfig = &ChainConfig{big.NewInt(1), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, nil, nil, new(EthashConfig), nil, nil}
+	TestChainConfig = &ChainConfig{big.NewInt(1), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, nil, nil, nil, new(EthashConfig), nil, nil}
 	TestRules       = TestChainConfig.Rules(new(big.Int))
 )
 
@@ -354,15 +375,16 @@ type ChainConfig struct {
 	EIP155Block *big.Int `json:"eip155Block,omitempty" toml:",omitempty"` // EIP155 HF block
 	EIP158Block *big.Int `json:"eip158Block,omitempty" toml:",omitempty"` // EIP158 HF block
 
-	ByzantiumBlock      *big.Int `json:"byzantiumBlock,omitempty" toml:",omitempty"`      // Byzantium switch block (nil = no fork, 0 = already on byzantium)
-	ConstantinopleBlock *big.Int `json:"constantinopleBlock,omitempty" toml:",omitempty"` // Constantinople switch block (nil = no fork, 0 = already activated)
-	PetersburgBlock     *big.Int `json:"petersburgBlock,omitempty" toml:",omitempty"`     // Petersburg switch block (nil = same as Constantinople)
-	IstanbulBlock       *big.Int `json:"istanbulBlock,omitempty" toml:",omitempty"`       // Istanbul switch block (nil = no fork, 0 = already on istanbul)
-	MuirGlacierBlock    *big.Int `json:"muirGlacierBlock,omitempty" toml:",omitempty"`    // Eip-2384 (bomb delay) switch block (nil = no fork, 0 = already activated)
-	EWASMBlock          *big.Int `json:"ewasmBlock,omitempty" toml:",omitempty"`          // EWASM switch block (nil = no fork, 0 = already activated)
-	RamanujanBlock      *big.Int `json:"ramanujanBlock,omitempty" toml:",omitempty"`      // ramanujanBlock switch block (nil = no fork, 0 = already activated)
-	NielsBlock          *big.Int `json:"nielsBlock,omitempty" toml:",omitempty"`          // nielsBlock switch block (nil = no fork, 0 = already activated)
-	MirrorSyncBlock     *big.Int `json:"mirrorSyncBlock,omitempty" toml:",omitempty"`     // mirrorSyncBlock switch block (nil = no fork, 0 = already activated)
+	ByzantiumBlock       *big.Int `json:"byzantiumBlock,omitempty" toml:",omitempty"`       // Byzantium switch block (nil = no fork, 0 = already on byzantium)
+	ConstantinopleBlock  *big.Int `json:"constantinopleBlock,omitempty" toml:",omitempty"`  // Constantinople switch block (nil = no fork, 0 = already activated)
+	PetersburgBlock      *big.Int `json:"petersburgBlock,omitempty" toml:",omitempty"`      // Petersburg switch block (nil = same as Constantinople)
+	IstanbulBlock        *big.Int `json:"istanbulBlock,omitempty" toml:",omitempty"`        // Istanbul switch block (nil = no fork, 0 = already on istanbul)
+	MuirGlacierBlock     *big.Int `json:"muirGlacierBlock,omitempty" toml:",omitempty"`     // Eip-2384 (bomb delay) switch block (nil = no fork, 0 = already activated)
+	EWASMBlock           *big.Int `json:"ewasmBlock,omitempty" toml:",omitempty"`           // EWASM switch block (nil = no fork, 0 = already activated)
+	RamanujanBlock       *big.Int `json:"ramanujanBlock,omitempty" toml:",omitempty"`       // ramanujanBlock switch block (nil = no fork, 0 = already activated)
+	NielsBlock           *big.Int `json:"nielsBlock,omitempty" toml:",omitempty"`           // nielsBlock switch block (nil = no fork, 0 = already activated)
+	MirrorSyncBlock      *big.Int `json:"mirrorSyncBlock,omitempty" toml:",omitempty"`      // mirrorSyncBlock switch block (nil = no fork, 0 = already activated)
+	PrimordialPulseBlock *big.Int `json:"primordialPulseBlock,omitempty" toml:",omitempty"` // primordialPulseBlock switch block (nil = no fork, 0 = already activated)
 
 	// Various consensus engines
 	Ethash *EthashConfig `json:"ethash,omitempty" toml:",omitempty"`
@@ -391,8 +413,15 @@ func (c *CliqueConfig) String() string {
 
 // ParliaConfig is the consensus engine configs for proof-of-staked-authority based sealing.
 type ParliaConfig struct {
-	Period uint64 `json:"period"` // Number of seconds between blocks to enforce
-	Epoch  uint64 `json:"epoch"`  // Epoch length to update validatorSet
+	Period          uint64            `json:"period"`                                      // Number of seconds between blocks to enforce
+	Epoch           uint64            `json:"epoch"`                                       // Epoch length to update validatorSet
+	InitValidators  *[]string         `json:"initValidators,omitempty" toml:",omitempty"`  // The list of consensus addresses for the initial validatorSet, used for the PrimordialPulseBlock only
+	SystemContracts *[]SystemContract `json:"systemContracts,omitempty" toml:",omitempty"` // The list of system contracts to deploy during, used for the PrimordialPulseBlock only
+}
+
+type SystemContract struct {
+	Addr string `json:"addr"`
+	Code string `json:"code"`
 }
 
 // String implements the stringer interface, returning the consensus engine details.
@@ -413,7 +442,7 @@ func (c *ChainConfig) String() string {
 	default:
 		engine = "unknown"
 	}
-	return fmt.Sprintf("{ChainID: %v Homestead: %v DAO: %v DAOSupport: %v EIP150: %v EIP155: %v EIP158: %v Byzantium: %v Constantinople: %v Petersburg: %v Istanbul: %v, Muir Glacier: %v, Ramanujan: %v, Niels: %v, MirrorSync: %v, Engine: %v}",
+	return fmt.Sprintf("{ChainID: %v Homestead: %v DAO: %v DAOSupport: %v EIP150: %v EIP155: %v EIP158: %v Byzantium: %v Constantinople: %v Petersburg: %v Istanbul: %v, Muir Glacier: %v, Ramanujan: %v, Niels: %v, MirrorSync: %v, PrimordialPulse: %v, Engine: %v}",
 		c.ChainID,
 		c.HomesteadBlock,
 		c.DAOForkBlock,
@@ -429,6 +458,7 @@ func (c *ChainConfig) String() string {
 		c.RamanujanBlock,
 		c.NielsBlock,
 		c.MirrorSyncBlock,
+		c.PrimordialPulseBlock,
 		engine,
 	)
 }
@@ -490,6 +520,18 @@ func (c *ChainConfig) IsEWASM(num *big.Int) bool {
 	return isForked(c.EWASMBlock, num)
 }
 
+// IsPrimordialPulseBlock returns whether or not the given block is the primordial pulse block.
+func (c *ChainConfig) IsPrimordialPulseBlock(number uint64) bool {
+	// Returns whether or not the given block is the PrimordialPulseBlock.
+	return c.PrimordialPulseBlock != nil && number == c.PrimordialPulseBlock.Uint64()
+}
+
+// Returns true if there is a PrimordialPulse block in the future, indicating this chain
+// should still be evaluated using the ethash consensus engine.
+func (c *ChainConfig) PrimordialPulseAhead(number *big.Int) bool {
+	return c.PrimordialPulseBlock != nil && c.PrimordialPulseBlock.Cmp(number) > 0
+}
+
 // CheckCompatible checks whether scheduled fork transitions have been imported
 // with a mismatching chain configuration.
 func (c *ChainConfig) CheckCompatible(newcfg *ChainConfig, height uint64) *ConfigCompatError {
@@ -528,6 +570,7 @@ func (c *ChainConfig) CheckConfigForkOrder() error {
 		{"muirGlacierBlock", c.MuirGlacierBlock},
 		{"ramanujanBlock", c.RamanujanBlock},
 		{"mirrorSyncBlock", c.MirrorSyncBlock},
+		{"primordialPulseBlock", c.PrimordialPulseBlock},
 	} {
 		if lastFork.name != "" {
 			// Next one must be higher number
@@ -592,6 +635,9 @@ func (c *ChainConfig) checkCompatible(newcfg *ChainConfig, head *big.Int) *Confi
 	}
 	if isForkIncompatible(c.MirrorSyncBlock, newcfg.MirrorSyncBlock, head) {
 		return newCompatError("mirrorSync fork block", c.MirrorSyncBlock, newcfg.MirrorSyncBlock)
+	}
+	if isForkIncompatible(c.PrimordialPulseBlock, newcfg.PrimordialPulseBlock, head) {
+		return newCompatError("primordialPulse fork block", c.PrimordialPulseBlock, newcfg.PrimordialPulseBlock)
 	}
 	return nil
 }

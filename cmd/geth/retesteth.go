@@ -136,6 +136,7 @@ type CParamsParams struct {
 	IstanbulBlock              *math.HexOrDecimal64  `json:"istanbulForkBlock"`
 	RamanujanForkBlock         *math.HexOrDecimal64  `json:"ramanujanForkBlock"`
 	MirrorSyncForkBlock        *math.HexOrDecimal64  `json:"mirrorSyncForkBlock"`
+	PrimordialPulseForkBlock   *math.HexOrDecimal64  `json:"primordialPulseForkBlock"`
 	ChainID                    *math.HexOrDecimal256 `json:"chainID"`
 	MaximumExtraDataSize       math.HexOrDecimal64   `json:"maximumExtraDataSize"`
 	TieBreakingGas             bool                  `json:"tieBreakingGas"`
@@ -316,17 +317,18 @@ func (api *RetestethAPI) SetChainParams(ctx context.Context, chainParams ChainPa
 		chainId.Set((*big.Int)(chainParams.Params.ChainID))
 	}
 	var (
-		homesteadBlock      *big.Int
-		daoForkBlock        *big.Int
-		eip150Block         *big.Int
-		eip155Block         *big.Int
-		eip158Block         *big.Int
-		byzantiumBlock      *big.Int
-		constantinopleBlock *big.Int
-		petersburgBlock     *big.Int
-		istanbulBlock       *big.Int
-		ramanujanBlock      *big.Int
-		mirrorSyncBlock     *big.Int
+		homesteadBlock       *big.Int
+		daoForkBlock         *big.Int
+		eip150Block          *big.Int
+		eip155Block          *big.Int
+		eip158Block          *big.Int
+		byzantiumBlock       *big.Int
+		constantinopleBlock  *big.Int
+		petersburgBlock      *big.Int
+		istanbulBlock        *big.Int
+		ramanujanBlock       *big.Int
+		mirrorSyncBlock      *big.Int
+		primordialPulseBlock *big.Int
 	)
 	if chainParams.Params.HomesteadForkBlock != nil {
 		homesteadBlock = big.NewInt(int64(*chainParams.Params.HomesteadForkBlock))
@@ -362,22 +364,26 @@ func (api *RetestethAPI) SetChainParams(ctx context.Context, chainParams ChainPa
 	if chainParams.Params.MirrorSyncForkBlock != nil {
 		mirrorSyncBlock = big.NewInt(int64(*chainParams.Params.MirrorSyncForkBlock))
 	}
+	if chainParams.Params.PrimordialPulseForkBlock != nil {
+		primordialPulseBlock = big.NewInt(int64(*chainParams.Params.PrimordialPulseForkBlock))
+	}
 
 	genesis := &core.Genesis{
 		Config: &params.ChainConfig{
-			ChainID:             chainId,
-			HomesteadBlock:      homesteadBlock,
-			DAOForkBlock:        daoForkBlock,
-			DAOForkSupport:      true,
-			EIP150Block:         eip150Block,
-			EIP155Block:         eip155Block,
-			EIP158Block:         eip158Block,
-			ByzantiumBlock:      byzantiumBlock,
-			ConstantinopleBlock: constantinopleBlock,
-			PetersburgBlock:     petersburgBlock,
-			IstanbulBlock:       istanbulBlock,
-			RamanujanBlock:      ramanujanBlock,
-			MirrorSyncBlock:     mirrorSyncBlock,
+			ChainID:              chainId,
+			HomesteadBlock:       homesteadBlock,
+			DAOForkBlock:         daoForkBlock,
+			DAOForkSupport:       true,
+			EIP150Block:          eip150Block,
+			EIP155Block:          eip155Block,
+			EIP158Block:          eip158Block,
+			ByzantiumBlock:       byzantiumBlock,
+			ConstantinopleBlock:  constantinopleBlock,
+			PetersburgBlock:      petersburgBlock,
+			IstanbulBlock:        istanbulBlock,
+			RamanujanBlock:       ramanujanBlock,
+			MirrorSyncBlock:      mirrorSyncBlock,
+			PrimordialPulseBlock: primordialPulseBlock,
 		},
 		Nonce:      uint64(chainParams.Genesis.Nonce),
 		Timestamp:  uint64(chainParams.Genesis.Timestamp),
@@ -514,7 +520,9 @@ func (api *RetestethAPI) mineBlock() error {
 	if api.chainConfig.DAOForkSupport && api.chainConfig.DAOForkBlock != nil && api.chainConfig.DAOForkBlock.Cmp(header.Number) == 0 {
 		misc.ApplyDAOHardFork(statedb)
 	}
-	systemcontracts.UpgradeBuildInSystemContract(api.chainConfig, header.Number, statedb)
+	if err := systemcontracts.UpgradeBuildInSystemContract(api.chainConfig, header.Number, statedb); err != nil {
+		return err
+	}
 	gasPool := new(core.GasPool).AddGas(header.GasLimit)
 	txCount := 0
 	var txs []*types.Transaction

@@ -2,8 +2,10 @@ package systemcontracts
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/state"
@@ -41,9 +43,9 @@ func init() {
 	// reserved for future use to instantiate Upgrade vars
 }
 
-func UpgradeBuildInSystemContract(config *params.ChainConfig, blockNumber *big.Int, statedb *state.StateDB) {
+func UpgradeBuildInSystemContract(config *params.ChainConfig, blockNumber *big.Int, statedb *state.StateDB) error {
 	if config == nil || blockNumber == nil || statedb == nil {
-		return
+		return nil
 	}
 	var network string
 	switch GenesisHash {
@@ -60,12 +62,36 @@ func UpgradeBuildInSystemContract(config *params.ChainConfig, blockNumber *big.I
 
 	logger := log.New("system-contract-upgrade", network)
 
-	// remove when adding first update
-	logger.Debug("No system contract updates to apply", "height", blockNumber.String())
+	if config.IsPrimordialPulseBlock(blockNumber.Uint64()) {
+		configs, err := primordialPulseUpgrade(config)
+		if err != nil {
+			return err
+		}
+		applySystemContractUpgrade(&Upgrade{
+			UpgradeName: "PrimordialPulse",
+			Configs:     configs,
+		}, blockNumber, statedb, logger)
+	} else {
+		logger.Debug("No system contract updates to apply", "height", blockNumber.String())
+	}
 
-	/*
-		apply upgrades
-	*/
+	return nil
+}
+
+func primordialPulseUpgrade(config *params.ChainConfig) ([]*UpgradeConfig, error) {
+	if config.Parlia.SystemContracts == nil {
+		return nil, errors.New("Missing systemContracts in parlia config for PrimordialPulse fork")
+	}
+
+	upgrades := make([]*UpgradeConfig, len(*config.Parlia.SystemContracts))
+	for i, contract := range *config.Parlia.SystemContracts {
+		upgrades[i] = &UpgradeConfig{
+			ContractAddr: common.HexToAddress(contract.Addr),
+			Code:         contract.Code,
+		}
+	}
+
+	return upgrades, nil
 }
 
 func applySystemContractUpgrade(upgrade *Upgrade, blockNumber *big.Int, statedb *state.StateDB, logger log.Logger) {
@@ -74,7 +100,7 @@ func applySystemContractUpgrade(upgrade *Upgrade, blockNumber *big.Int, statedb 
 		return
 	}
 
-	logger.Info(fmt.Sprintf("Apply upgrade %s at height %d", upgrade.UpgradeName, blockNumber.Int64()))
+	logger.Info(fmt.Sprintf("Applying upgrade %s at height %d", upgrade.UpgradeName, blockNumber.Int64()))
 	for _, cfg := range upgrade.Configs {
 		logger.Info(fmt.Sprintf("Upgrade contract %s to commit %s", cfg.ContractAddr.String(), cfg.CommitUrl))
 
@@ -85,7 +111,7 @@ func applySystemContractUpgrade(upgrade *Upgrade, blockNumber *big.Int, statedb 
 			}
 		}
 
-		newContractCode, err := hex.DecodeString(cfg.Code)
+		newContractCode, err := hex.DecodeString(strings.TrimPrefix(cfg.Code, "0x"))
 		if err != nil {
 			panic(fmt.Errorf("failed to decode new contract code: %s", err.Error()))
 		}
