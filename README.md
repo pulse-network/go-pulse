@@ -1,60 +1,49 @@
-## Binance Smart Chain
+# PulseChain Node
 
-The goal of Binance Smart Chain is to bring programmability and interoperability to Binance Chain. In order to embrace the existing popular community and advanced technology, it will bring huge benefits by staying compatible with all the existing smart contracts on Ethereum and Ethereum tooling. And to achieve that, the easiest solution is to develop based on go-ethereum fork, as we respect the great work of Ethereum very much.
+The repo holds the PulseChain fork of [Go-Ethereum](https://github.com/ethereum/go-ethereum) and [Binance Smart Chain](https://github.com/binance-chain/bsc). Credit to the wealth of upstream development this project is built upon.
 
-Binance Smart Chain starts its development based on go-ethereum fork. So you may see many toolings, binaries and also docs are based on Ethereum ones, such as the name “geth”.
+PulseChain is a stateful fork of Ethereum running Proof of Staked Authority consensus system with the stated goals of increased performance and significantly reduced fees for the users of the ecosystem. As a stateful fork, copies of all Ethereum contracts, tokens, and user accounts at time of fork will exist in the PulseChain network.
 
-But from that baseline of EVM compatible, Binance Smart Chain introduces  a system of 21 validators with Proof of Staked Authority (PoSA) consensus that can support short block time and lower fees. The most bonded validator candidates of staking will become validators and produce blocks. The double-sign detection and other slashing logic guarantee security, stability, and chain finality.
+Being a fork of Go-Ethereum, many of the Go-Ethereum binaries and tools you're familiar with remain the same (geth, bootnode, puppeth, etc).
 
-Cross-chain transfer and other communication are possible due to native support of interoperability. Relayers and on-chain contracts are developed to support that. Binance DEX remains a liquid venue of the exchange of assets on both chains. This dual-chain architecture will be ideal for users to take advantage of the fast trading on one side and build their decentralized apps on the other side. **The Binance Smart Chain** will be:
+The Proof of Staked Authority (PoSA) consensus engine developed for BSC is based on the Clique consensus engine detailed in [EIP-225](https://eips.ethereum.org/EIPS/eip-225), with validators tracking and selection being dictated by system contracts. Validator rotation on BSC is administered through cross-chain messages originating from Binance Chain. PulseChain simplifies this system by removing the dual chain complexity and by implementing validator staking and rotation as native system contracts that can be directly interacted with by the PulseChain users. Slashing logic ensures liveness, security, stability, and chain finality.
 
-- **A self-sovereign blockchain**: Provides security and safety with elected validators.
-- **EVM-compatible**: Supports all the existing Ethereum tooling along with faster finality and cheaper transaction fees.
-- **Interoperable**: Comes with efficient native dual chain communication; Optimized for scaling high-performance dApps that require fast and smooth user experience.
-- **Distributed with on-chain governance**: Proof of Staked Authority brings in decentralization and community participants. As the native token, BNB will serve as both the gas of smart contract execution and tokens for staking.
-
-More details in [White Paper](http://binance.org/en#smartChain).
+The PulseChain network will launch with a stable set of maintained validators. Tech-savvy PulseChain users are encouraged to deploy new independent validators that can be voted into the network consensus by the PulseChain users, aiding in the decentralization of the network.
 
 ## Key features
 
-### Proof of Staked Authority 
-Although Proof-of-Work (PoW) has been approved as a practical mechanism to implement a decentralized network, it is not friendly to the environment and also requires a large size of participants to maintain the security. 
+### Stateful Ethereum Fork
+PulseChain brings all of the Ethereum state with it! As of block number _______ (TBD), Exact copies of all smart contracts, ERC-20 tokens, ERC-721 NFTs, and user accounts will exist on PulseChain. Because of the extent of applications and use cases deployed on the Ethereum mainnet, it's not possible to anticipate exactly how any cloned assets will be valued by the community. Some contracts and applications will work 100% as they do on Ethereum, other contracts such as centralized stable coins are unlikely to have the authoritative support behind them.
 
-Proof-of-Authority(PoA) provides some defense to 51% attack, with improved efficiency and tolerance to certain levels of Byzantine players (malicious or hacked). 
-Meanwhile, the PoA protocol is most criticized for being not as decentralized as PoW, as the validators, i.e. the nodes that take turns to produce blocks, have all the authorities and are prone to corruption and security attacks.
+Eventually the relative value of these assets will equalize though market action, but it is expected that there will be a discovery period with high volatility at launch of the network.
+
+### Proof of Staked Authority 
+Although Proof-of-Work (PoW) has been proven as a mechanism to implement a decentralized network, it is not practical for new or small networks and requires a large number of participants and computational waste to maintain the security. 
+
+Proof-of-Authority(PoA) provides defense against 51% attack, with improved efficiency and tolerance to certain levels of Byzantine players (malicious or hacked). 
+The PoA protocol however is most criticized for being not as decentralized as PoW, as the validators, i.e. the nodes that take turns to produce blocks, have all the authorities and are prone to corruption and security attacks.
 
 Other blockchains, such as EOS and Cosmos both, introduce different types of Deputy Proof of Stake (DPoS) to allow the token holders to vote and elect the validator set. It increases the decentralization and favors community governance. 
 
-To combine DPoS and PoA for consensus, Binance Smart Chain implement a novel consensus engine called Parlia that:
+PulseChain inherits and modifies the Binance Smart Chain consensus engine, Parlia, which combines DPoS and PoA. The PulseChain consensus engine has the following properties:
 
 1. Blocks are produced by a limited set of validators.
 2. Validators take turns to produce blocks in a PoA manner, similar to Ethereum's Clique consensus engine.
-3. Validator set are elected in and out based on a staking based governance on Binance Chain.
-4. The validator set change is relayed via a cross-chain communication mechanism.
-5. Parlia consensus engine will interact with a set of [system contracts](https://github.com/binance-chain/docs-site/blob/add-bsc/docs/smart-chain/guides/concepts/system-contract.md) to achieve liveness slash, revenue distributing and validator set renewing func.
-
- 
-### Light Client of Binance Chain  
-
-To achieve the cross-chain communication from Binance Chain to Binance Smart Chain, need introduce a on-chain light client verification algorithm.
-It contains two parts:
-
-1. [Stateless Precompiled contracts](https://github.com/binance-chain/bsc/blob/master/core/vm/contracts_lightclient.go) to do tendermint header verification and Merkle Proof verification.
-2. [Stateful solidity contracts](https://github.com/binance-chain/bsc-genesis-contract/blob/master/contracts/TendermintLightClient.sol) to store validator set and trusted appHash.  
+3. Validator set are elected in and out based on a staking contracts implemented on PulseChain.
+4. Validator set rotation occurs on a regular interval with applicable validators chosen from the staking contract (selecting the validators with the bonded stake)
+5. The consensus engine will interact directly with the slash, staking, and validator system-contracts to achieve liveness and stability, revenue distribution, and validator rotation.
 
 ## Native Token
 
-BNB will run on Binance Smart Chain in the same way as ETH runs on Ethereum so that it remains as `native token` for BSC. This means, 
-BNB will be used to:
+The native ETH token will become PLS on the PulseChain network. The PLS supply will be inflated 10,000x upon forking, with the extra supply being distributed to the users that sacrificed during the PulseChain sacrifice phase.
 
-1. pay `gas` to deploy or invoke Smart Contract on BSC
-2. perform cross-chain operations, such as transfer token assets across Binance Smart Chain and Binance Chain.
+PLS will be used just as ETH is used on the Ethereum network for transaction fees, as well as for delegating stake to network validators.
 
 ## Building the source
 
 Many of the below are the same as or similar to go-ethereum.
 
-For prerequisites and detailed build instructions please read the [Installation Instructions](https://github.com/ethereum/go-ethereum/wiki/Building-Ethereum) on the wiki.
+For prerequisites and detailed build instructions please read the [Installation Instructions](https://geth.ethereum.org/docs/install-and-build/installing-geth) on the wiki.
 
 Building `geth` requires both a Go (version 1.13 or later) and a C compiler. You can install
 them using your favourite package manager. Once the dependencies are installed, run
@@ -71,13 +60,18 @@ make all
 
 ## Executables
 
-The bsc project comes with several wrappers/executables found in the `cmd`
+The PulseChain project comes with several wrappers/executables found in the `cmd`
 directory.
 
 |    Command    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | :-----------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|  **`geth`**   | Main Binance Smart Chain client binary. It is the entry point into the BSC network (main-, test- or private net), capable of running as a full node (default), archive node (retaining all historical state) or a light node (retrieving data live). It has the same and more RPC and other interface as go-ethereum and can be used by other processes as a gateway into the BSC network via JSON RPC endpoints exposed on top of HTTP, WebSocket and/or IPC transports. `geth --help` and the [CLI Wiki page](https://github.com/ethereum/go-ethereum/wiki/Command-Line-Options) for command line options.          |
-|   `abigen`,`bootnode`,`evm`, `gethrpctest`,`rlpdump`,`puppeth`     | **These binaries are exactly the same as the binaries built in go-ethereum repo.**|
+|  **`geth`**   | Main PulseChain client binary. It is the entry point into the Pulse network (main-, test- or private net), capable of running as a full node (default), archive node (retaining all historical state) or a light node (retrieving data live). It has the same and more RPC and other interface as go-ethereum and can be used by other processes as a gateway into the BSC network via JSON RPC endpoints exposed on top of HTTP, WebSocket and/or IPC transports. `geth --help` and the [CLI Wiki page](https://geth.ethereum.org/docs/interface/command-line-options) for command line options.          |
+|   `abigen`    | Source code generator to convert Ethereum contract definitions into easy to use, compile-time type-safe Go packages. It operates on plain [Ethereum contract ABIs](https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI) with expanded functionality if the contract bytecode is also available. However, it also accepts Solidity source files, making development much more streamlined. Please see our [Native DApps](https://github.com/ethereum/go-ethereum/wiki/Native-DApps:-Go-bindings-to-Ethereum-contracts) wiki page for details. |
+|  `bootnode`   | Stripped down version of our Ethereum client implementation that only takes part in the network node discovery protocol, but does not run any of the higher level application protocols. It can be used as a lightweight bootstrap node to aid in finding peers in private networks.                                                                                                                                                                                                                                                                 |
+|     `evm`     | Developer utility version of the EVM (Ethereum Virtual Machine) that is capable of running bytecode snippets within a configurable environment and execution mode. Its purpose is to allow isolated, fine-grained debugging of EVM opcodes (e.g. `evm --code 60ff60ff --debug run`).                                                                                                                                                                                                                                                                     |
+| `gethrpctest` | Developer utility tool to support our [ethereum/rpc-test](https://github.com/ethereum/rpc-tests) test suite which validates baseline conformity to the [Ethereum JSON RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC) specs. Please see the [test suite's readme](https://github.com/ethereum/rpc-tests/blob/master/README.md) for details.                                                                                                                                                                                                     |
+|   `rlpdump`   | Developer utility tool to convert binary RLP ([Recursive Length Prefix](https://github.com/ethereum/wiki/wiki/RLP)) dumps (data encoding used by the Ethereum protocol both network as well as consensus wise) to user-friendlier hierarchical representation (e.g. `rlpdump --hex CE0183FFFFFFC4C304050583616263`).                                                                                                                                                                                                                                 |
+|   `puppeth`   | a CLI wizard that aids in creating a new Ethereum network.
 
 ## Running `geth`
 
@@ -93,18 +87,9 @@ The hardware must meet certain requirements to run a full node.
 - 4 cores of CPU and 8 gigabytes of memory (RAM) for testnet.
 - A broadband Internet connection with upload/download speeds of at least 1 megabyte per second
 
-### A Full node on the Rialto test network
+### A Full node on the PulseChain Testnet
 
-Steps:
-
-1. Download the binary, config and genesis files from [release](https://github.com/binance-chain/bsc/releases/download/v1.0.0-alpha.0/binary.zip), or compile the binary by `make geth`. 
-2. Init genesis state: `./geth --datadir node init genesis.json`.
-3. Start your fullnode: `./geth --config ./config.toml --datadir ./node`.
-4. Or start a validator node: `./geth --config ./config.toml --datadir ./node -unlock ${validatorAddr} --mine --allow-insecure-unlock`. The ${validatorAddr} is the wallet account address of your running validator node. 
-
-*Note: The default p2p port is 30311 and the RPC port is 8575 which is different from Ethereum.*
-
-More details about [running a node](https://docs.binance.org/smart-chain/developer/fullnode.html) and [becoming a validator](https://docs.binance.org/smart-chain/validator/candidate.html).
+> **TODO** Provide instructions here once the PulseChain testnet is live.
 
 *Note: Although there are some internal protective measures to prevent transactions from
 crossing over between the main network and test network, you should make sure to always
@@ -115,7 +100,7 @@ accounts available between them.*
 ### Programmatically interfacing `geth` nodes
 
 As a developer, sooner rather than later you'll want to start interacting with `geth` and the
-Binance Smart Chain network via your own programs and not manually through the console. To aid
+PulseChain network via your own programs and not manually through the console. To aid
 this, `geth` has built-in support for a JSON-RPC based APIs ([standard APIs](https://github.com/ethereum/wiki/wiki/JSON-RPC)
 and [`geth` specific APIs](https://github.com/ethereum/go-ethereum/wiki/Management-APIs)).
 These can be exposed via HTTP, WebSockets and IPC (UNIX sockets on UNIX based
@@ -149,16 +134,16 @@ can reuse the same connection for multiple requests!
 
 **Note: Please understand the security implications of opening up an HTTP/WS based
 transport before doing so! Hackers on the internet are actively trying to subvert
-BSC nodes with exposed APIs! Further, all browser tabs can access locally
+PulseChain nodes with exposed APIs! Further, all browser tabs can access locally
 running web servers, so malicious web pages could try to subvert locally available
 APIs!**
 
 ## License
 
-The bsc library (i.e. all code outside of the `cmd` directory) is licensed under the
+The PulseChain Node library (i.e. all code outside of the `cmd` directory) is licensed under the
 [GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html),
 also included in our repository in the `COPYING.LESSER` file.
 
-The bsc binaries (i.e. all code inside of the `cmd` directory) is licensed under the
+The PulseChain Node binaries (i.e. all code inside of the `cmd` directory) is licensed under the
 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html), also
 included in our repository in the `COPYING` file.
