@@ -1,4 +1,4 @@
-# PulseChain
+# PulseChain Node
 
 The repo holds the PulseChain fork of [Go-Ethereum](https://github.com/ethereum/go-ethereum) and [Binance Smart Chain](https://github.com/binance-chain/bsc). Credit to the wealth of upstream development this project is built upon.
 
@@ -13,19 +13,19 @@ The PulseChain network will launch with a stable set of maintained validators. T
 ## Key features
 
 ### Stateful Ethereum Fork
-PulseChain brings all of the Ethereum state with it! As of block number _______ (TBD), Exact copies of all smart contracts, ERC-20 tokens, ERC-721 (NFTs), and user accounts will exist on PulseChain. Because of the extent of applications and use cases deployed on the Ethereum mainnet, it's not possible to anticipate exactly how any cloned assets will be valued by the community. Some contracts and applications will work 100% as they do on Ethereum, other contracts such as centralized stable coins are unlikely to have the authoritative support behind them.
+PulseChain brings all of the Ethereum state with it! As of block number _______ (TBD), Exact copies of all smart contracts, ERC-20 tokens, ERC-721 NFTs, and user accounts will exist on PulseChain. Because of the extent of applications and use cases deployed on the Ethereum mainnet, it's not possible to anticipate exactly how any cloned assets will be valued by the community. Some contracts and applications will work 100% as they do on Ethereum, other contracts such as centralized stable coins are unlikely to have the authoritative support behind them.
 
 Eventually the relative value of these assets will equalize though market action, but it is expected that there will be a discovery period with high volatility at launch of the network.
 
 ### Proof of Staked Authority 
-Although Proof-of-Work (PoW) has been approved as a practical mechanism to implement a decentralized network, it is not friendly to the environment and also requires a large size of participants to maintain the security. 
+Although Proof-of-Work (PoW) has been proven as a mechanism to implement a decentralized network, it is not practical for new or small networks and requires a large number of participants and computational waste to maintain the security. 
 
-Proof-of-Authority(PoA) provides some defense to 51% attack, with improved efficiency and tolerance to certain levels of Byzantine players (malicious or hacked). 
-Meanwhile, the PoA protocol is most criticized for being not as decentralized as PoW, as the validators, i.e. the nodes that take turns to produce blocks, have all the authorities and are prone to corruption and security attacks.
+Proof-of-Authority(PoA) provides defense against 51% attack, with improved efficiency and tolerance to certain levels of Byzantine players (malicious or hacked). 
+The PoA protocol however is most criticized for being not as decentralized as PoW, as the validators, i.e. the nodes that take turns to produce blocks, have all the authorities and are prone to corruption and security attacks.
 
 Other blockchains, such as EOS and Cosmos both, introduce different types of Deputy Proof of Stake (DPoS) to allow the token holders to vote and elect the validator set. It increases the decentralization and favors community governance. 
 
-PulseChain inherits and modifies the Binance Smart Chain consensus engine, Parlia. The PulseChain consensus engine has the following properties:
+PulseChain inherits and modifies the Binance Smart Chain consensus engine, Parlia, which combines DPoS and PoA. The PulseChain consensus engine has the following properties:
 
 1. Blocks are produced by a limited set of validators.
 2. Validators take turns to produce blocks in a PoA manner, similar to Ethereum's Clique consensus engine.
@@ -37,7 +37,7 @@ PulseChain inherits and modifies the Binance Smart Chain consensus engine, Parli
 
 The native ETH token will become PLS on the PulseChain network. The PLS supply will be inflated 10,000x upon forking, with the extra supply being distributed to the users that sacrificed during the PulseChain sacrifice phase.
 
-PLS will otherwise be used just as ETH is used on the Ethereum network for transaction fees, as well as for delegating stake to network validators.
+PLS will be used just as ETH is used on the Ethereum network for transaction fees, as well as for delegating stake to network validators.
 
 ## Building the source
 
@@ -140,7 +140,7 @@ APIs!**
 
 ## License
 
-The PulseChain go-node library (i.e. all code outside of the `cmd` directory) is licensed under the
+The PulseChain Node library (i.e. all code outside of the `cmd` directory) is licensed under the
 [GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html),
 also included in our repository in the `COPYING.LESSER` file.
 
