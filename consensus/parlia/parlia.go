@@ -69,6 +69,7 @@ var (
 	systemContracts = map[common.Address]bool{
 		common.HexToAddress(systemcontracts.ValidatorContract): true,
 		common.HexToAddress(systemcontracts.SlashContract):     true,
+		common.HexToAddress(systemcontracts.StakingContract):   true,
 	}
 )
 
@@ -776,10 +777,10 @@ func (p *Parlia) Finalize(chain consensus.ChainReader, header *types.Header, sta
 	// trigger the validator rotation on the last block of the era
 	// on the next block (epoch), the authorization snapshot will be updated
 	if (number+1)%(p.config.Epoch*p.config.Era) == 0 {
-		log.Info("triggering staked validator rotation", "number", number)
+		log.Info("Triggering staked validator rotation", "number", number)
 		err = p.rotateValidators(state, header, cx, txs, receipts, systemTxs, usedGas, false)
 		if err != nil {
-			log.Error("staked validator rotation failed", "number", number)
+			log.Error("Staked validator rotation failed", "number", number)
 		}
 	}
 
@@ -845,10 +846,10 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainReader, header *types.
 	// trigger the validator rotation on the last block of the era
 	// on the next block (epoch), the authorization snapshot will be updated
 	if (number+1)%(p.config.Epoch*p.config.Era) == 0 {
-		log.Info("triggering staked validator rotation", "number", number)
+		log.Info("Triggering staked validator rotation", "number", number)
 		err := p.rotateValidators(state, header, cx, &txs, &receipts, nil, &header.GasUsed, true)
 		if err != nil {
-			log.Error("staked validator rotation failed", "number", number)
+			log.Error("Staked validator rotation failed", "number", number)
 		}
 	}
 
@@ -1125,6 +1126,7 @@ func (p *Parlia) initContracts(state *state.StateDB, header *types.Header, chain
 	contracts := []string{
 		systemcontracts.ValidatorContract,
 		systemcontracts.SlashContract,
+		systemcontracts.StakingContract,
 	}
 	// get packed data
 	data, err := p.validatorSetABI.Pack(method)
