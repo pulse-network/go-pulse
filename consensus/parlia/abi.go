@@ -18,7 +18,7 @@ const validatorSetABI = `
 				"type": "uint256"
 			}
 		],
-		"name": "systemDeposit",
+		"name": "SystemDeposit",
 		"type": "event"
 	},
 	{
@@ -37,7 +37,7 @@ const validatorSetABI = `
 				"type": "uint256"
 			}
 		],
-		"name": "validatorDeposit",
+		"name": "ValidatorDeposit",
 		"type": "event"
 	},
 	{
@@ -56,7 +56,7 @@ const validatorSetABI = `
 				"type": "uint256"
 			}
 		],
-		"name": "validatorFelony",
+		"name": "ValidatorFelony",
 		"type": "event"
 	},
 	{
@@ -69,7 +69,7 @@ const validatorSetABI = `
 				"type": "address"
 			}
 		],
-		"name": "validatorJailed",
+		"name": "ValidatorJailed",
 		"type": "event"
 	},
 	{
@@ -88,57 +88,7 @@ const validatorSetABI = `
 				"type": "uint256"
 			}
 		],
-		"name": "validatorMisdemeanor",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "validator",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address payable",
-				"name": "payTo",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "validatorPayment",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "validator",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address payable",
-				"name": "payTo",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "validatorPaymentFailed",
+		"name": "ValidatorMisdemeanor",
 		"type": "event"
 	},
 	{
@@ -151,13 +101,13 @@ const validatorSetABI = `
 				"type": "string"
 			}
 		],
-		"name": "validatorSetInvalid",
+		"name": "ValidatorSetInvalid",
 		"type": "event"
 	},
 	{
 		"anonymous": false,
 		"inputs": [],
-		"name": "validatorSetUpdated",
+		"name": "ValidatorSetUpdated",
 		"type": "event"
 	},
 	{
@@ -201,19 +151,6 @@ const validatorSetABI = `
 	},
 	{
 		"inputs": [],
-		"name": "INIT_VALIDATORSET_BYTES",
-		"outputs": [
-			{
-				"internalType": "bytes",
-				"name": "",
-				"type": "bytes"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "MAX_NUM_OF_VALIDATORS",
 		"outputs": [
 			{
@@ -228,6 +165,19 @@ const validatorSetABI = `
 	{
 		"inputs": [],
 		"name": "SLASH_CONTRACT_ADDR",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "STAKING_CONTRACT_ADDR",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -276,12 +226,7 @@ const validatorSetABI = `
 		"outputs": [
 			{
 				"internalType": "address",
-				"name": "consensusAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "address payable",
-				"name": "feeAddress",
+				"name": "addr",
 				"type": "address"
 			},
 			{
@@ -372,31 +317,9 @@ const validatorSetABI = `
 	{
 		"inputs": [
 			{
-				"components": [
-					{
-						"internalType": "address",
-						"name": "consensusAddress",
-						"type": "address"
-					},
-					{
-						"internalType": "address payable",
-						"name": "feeAddress",
-						"type": "address"
-					},
-					{
-						"internalType": "bool",
-						"name": "jailed",
-						"type": "bool"
-					},
-					{
-						"internalType": "uint256",
-						"name": "incoming",
-						"type": "uint256"
-					}
-				],
-				"internalType": "struct ValidatorSet.Validator[]",
-				"name": "validatorSet",
-				"type": "tuple[]"
+				"internalType": "address[]",
+				"name": "validators",
+				"type": "address[]"
 			}
 		],
 		"name": "updateValidatorSet",
@@ -476,7 +399,7 @@ const slashABI = `
 	{
 		"anonymous": false,
 		"inputs": [],
-		"name": "indicatorCleaned",
+		"name": "IndicatorCleaned",
 		"type": "event"
 	},
 	{
@@ -495,7 +418,7 @@ const slashABI = `
 				"type": "bytes"
 			}
 		],
-		"name": "paramChange",
+		"name": "ParamChange",
 		"type": "event"
 	},
 	{
@@ -508,7 +431,7 @@ const slashABI = `
 				"type": "address"
 			}
 		],
-		"name": "validatorSlashed",
+		"name": "ValidatorSlashed",
 		"type": "event"
 	},
 	{
@@ -579,6 +502,19 @@ const slashABI = `
 	{
 		"inputs": [],
 		"name": "SLASH_CONTRACT_ADDR",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "STAKING_CONTRACT_ADDR",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -782,6 +718,666 @@ const slashABI = `
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	}
+]
+`
+
+const stakingABI = `
+[
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "validator",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address payable",
+				"name": "payTo",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "PaymentFailed",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "validator",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address payable",
+				"name": "payTo",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "StakerPayment",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "validator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "ValidatorDeposit",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "validator",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address payable",
+				"name": "payTo",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "ValidatorPayment",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "validator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint8",
+				"name": "percentRevShare",
+				"type": "uint8"
+			}
+		],
+		"name": "ValidatorRegistered",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "validator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "ValidatorRewarded",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "validator",
+				"type": "address"
+			}
+		],
+		"name": "ValidatorSelected",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "validator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "ValidatorStakeAdded",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "validator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "ValidatorStakeRemoved",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "validator",
+				"type": "address"
+			}
+		],
+		"name": "ValidatorUnRegistered",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "CODE_OK",
+		"outputs": [
+			{
+				"internalType": "uint32",
+				"name": "",
+				"type": "uint32"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "GOV_ADDR",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "INIT_VALIDATORS_REVSHARE",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MIN_STAKE_LENGTH",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "NUM_VALIDATORS",
+		"outputs": [
+			{
+				"internalType": "uint16",
+				"name": "",
+				"type": "uint16"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "REQUIRED_DEPOSIT",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "SLASH_CONTRACT_ADDR",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "STAKING_CONTRACT_ADDR",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "VALIDATOR_CONTRACT_ADDR",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "alreadyInit",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "validatorDeposits",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "validatorMap",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "validatorStakers",
+		"outputs": [
+			{
+				"internalType": "address payable",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "init",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getRegisteredValidators",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "bool",
+						"name": "active",
+						"type": "bool"
+					},
+					{
+						"internalType": "address",
+						"name": "addr",
+						"type": "address"
+					},
+					{
+						"internalType": "address payable",
+						"name": "feeAddr",
+						"type": "address"
+					},
+					{
+						"internalType": "uint8",
+						"name": "percentRevShare",
+						"type": "uint8"
+					},
+					{
+						"internalType": "bool",
+						"name": "inRotation",
+						"type": "bool"
+					},
+					{
+						"internalType": "uint256",
+						"name": "pendingStake",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "totalStake",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct ValidatorStaking.Validator[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "valAddr",
+				"type": "address"
+			}
+		],
+		"name": "isRegisteredValidator",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "valAddr",
+				"type": "address"
+			}
+		],
+		"name": "validatorDeposit",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "valAddr",
+				"type": "address"
+			},
+			{
+				"internalType": "address payable",
+				"name": "feeAddr",
+				"type": "address"
+			},
+			{
+				"internalType": "uint8",
+				"name": "percentRevShare",
+				"type": "uint8"
+			}
+		],
+		"name": "registerValidator",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "unRegisterValidator",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "valAddr",
+				"type": "address"
+			}
+		],
+		"name": "getValidator",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "bool",
+						"name": "active",
+						"type": "bool"
+					},
+					{
+						"internalType": "address",
+						"name": "addr",
+						"type": "address"
+					},
+					{
+						"internalType": "address payable",
+						"name": "feeAddr",
+						"type": "address"
+					},
+					{
+						"internalType": "uint8",
+						"name": "percentRevShare",
+						"type": "uint8"
+					},
+					{
+						"internalType": "bool",
+						"name": "inRotation",
+						"type": "bool"
+					},
+					{
+						"internalType": "uint256",
+						"name": "pendingStake",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "totalStake",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct ValidatorStaking.Validator",
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "listStakes",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "addr",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amt",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "pendingAmt",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "startBlock",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct ValidatorStaking.ValidatorStake[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "valAddr",
+				"type": "address"
+			}
+		],
+		"name": "addStake",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "valAddr",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amt",
+				"type": "uint256"
+			}
+		],
+		"name": "removeStake",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "rotateValidators",
+		"outputs": [
+			{
+				"internalType": "uint32",
+				"name": "",
+				"type": "uint32"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "valAddr",
+				"type": "address"
+			}
+		],
+		"name": "rewardValidator",
+		"outputs": [],
+		"stateMutability": "payable",
 		"type": "function"
 	}
 ]
