@@ -202,7 +202,7 @@ type Parlia struct {
 	ethAPI          *ethapi.PublicBlockChainAPI
 	validatorSetABI abi.ABI
 	slashABI        abi.ABI
-	stakingAbi      abi.ABI
+	stakingABI      abi.ABI
 
 	// The fields below are for testing only
 	fakeDiff bool // Skip difficulty verifications
@@ -260,7 +260,7 @@ func New(
 		signatures:      signatures,
 		validatorSetABI: vABI,
 		slashABI:        slABI,
-		stakingAbi:      stABI,
+		stakingABI:      stABI,
 		signer:          types.NewEIP155Signer(chainConfig.ChainID),
 		makeEthash:      makeEthash,
 	}
@@ -1086,7 +1086,7 @@ func (p *Parlia) rotateValidators(state *state.StateDB, header *types.Header, ch
 	method := "rotateValidators"
 
 	// get packed data
-	data, err := p.stakingAbi.Pack(method)
+	data, err := p.stakingABI.Pack(method)
 	if err != nil {
 		log.Error("Unable to pack tx for staking contract", "error", err)
 		return err
