@@ -1205,11 +1205,6 @@ const stakingABI = `
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "valAddr",
-				"type": "address"
-			},
-			{
 				"internalType": "address payable",
 				"name": "feeAddr",
 				"type": "address"
