@@ -1122,7 +1122,7 @@ const stakingABI = `
 	},
 	{
 		"inputs": [],
-		"name": "getRegisteredValidators",
+		"name": "listRegisteredValidators",
 		"outputs": [
 			{
 				"components": [
@@ -1165,25 +1165,6 @@ const stakingABI = `
 				"internalType": "struct ValidatorStaking.Validator[]",
 				"name": "",
 				"type": "tuple[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "valAddr",
-				"type": "address"
-			}
-		],
-		"name": "isRegisteredValidator",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
 			}
 		],
 		"stateMutability": "view",
