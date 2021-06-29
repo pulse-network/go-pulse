@@ -880,6 +880,12 @@ const stakingABI = `
 				"type": "address"
 			},
 			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "staker",
+				"type": "address"
+			},
+			{
 				"indexed": false,
 				"internalType": "uint256",
 				"name": "amount",
@@ -896,6 +902,12 @@ const stakingABI = `
 				"indexed": true,
 				"internalType": "address",
 				"name": "validator",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "staker",
 				"type": "address"
 			},
 			{
