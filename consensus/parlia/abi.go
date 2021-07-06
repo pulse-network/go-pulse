@@ -1183,13 +1183,7 @@ const stakingABI = `
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "valAddr",
-				"type": "address"
-			}
-		],
+		"inputs": [],
 		"name": "validatorDeposit",
 		"outputs": [],
 		"stateMutability": "payable",
