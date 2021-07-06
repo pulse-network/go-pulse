@@ -138,19 +138,6 @@ const validatorSetABI = `
 	},
 	{
 		"inputs": [],
-		"name": "GOV_ADDR",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "MAX_NUM_OF_VALIDATORS",
 		"outputs": [
 			{
@@ -475,19 +462,6 @@ const slashABI = `
 	},
 	{
 		"inputs": [],
-		"name": "GOV_ADDR",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "MISDEMEANOR_THRESHOLD",
 		"outputs": [
 			{
@@ -552,32 +526,6 @@ const slashABI = `
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "decreaseRate",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "felonyThreshold",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -601,19 +549,6 @@ const slashABI = `
 				"internalType": "bool",
 				"name": "exist",
 				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "misdemeanorThreshold",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -652,13 +587,6 @@ const slashABI = `
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "init",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -674,24 +602,6 @@ const slashABI = `
 	{
 		"inputs": [],
 		"name": "clean",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "key",
-				"type": "string"
-			},
-			{
-				"internalType": "bytes",
-				"name": "value",
-				"type": "bytes"
-			}
-		],
-		"name": "updateParam",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -941,19 +851,6 @@ const stakingABI = `
 				"internalType": "uint32",
 				"name": "",
 				"type": "uint32"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "GOV_ADDR",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
 			}
 		],
 		"stateMutability": "view",

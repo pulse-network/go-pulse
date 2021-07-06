@@ -1124,8 +1124,8 @@ func (p *Parlia) initContracts(state *state.StateDB, header *types.Header, chain
 	method := "init"
 	// contracts
 	contracts := []string{
+		// slash contract does not require initialization
 		systemcontracts.ValidatorContract,
-		systemcontracts.SlashContract,
 		systemcontracts.StakingContract,
 	}
 	// get packed data
