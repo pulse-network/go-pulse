@@ -151,7 +151,7 @@ const validatorSetABI = `
 	},
 	{
 		"inputs": [],
-		"name": "SLASH_CONTRACT_ADDR",
+		"name": "SLASHING_CONTRACT_ADDR",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -393,25 +393,6 @@ const slashABI = `
 		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "key",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "bytes",
-				"name": "value",
-				"type": "bytes"
-			}
-		],
-		"name": "ParamChange",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
 				"indexed": true,
 				"internalType": "address",
 				"name": "validator",
@@ -475,7 +456,7 @@ const slashABI = `
 	},
 	{
 		"inputs": [],
-		"name": "SLASH_CONTRACT_ADDR",
+		"name": "SLASHING_CONTRACT_ADDR",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -910,7 +891,7 @@ const stakingABI = `
 	},
 	{
 		"inputs": [],
-		"name": "SLASH_CONTRACT_ADDR",
+		"name": "SLASHING_CONTRACT_ADDR",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -1071,7 +1052,7 @@ const stakingABI = `
 						"type": "uint256"
 					}
 				],
-				"internalType": "struct ValidatorStaking.Validator[]",
+				"internalType": "struct Staking.Validator[]",
 				"name": "",
 				"type": "tuple[]"
 			}
@@ -1159,7 +1140,7 @@ const stakingABI = `
 						"type": "uint256"
 					}
 				],
-				"internalType": "struct ValidatorStaking.Validator",
+				"internalType": "struct Staking.Validator",
 				"name": "",
 				"type": "tuple"
 			}
@@ -1194,7 +1175,7 @@ const stakingABI = `
 						"type": "uint256"
 					}
 				],
-				"internalType": "struct ValidatorStaking.ValidatorStake[]",
+				"internalType": "struct Staking.ValidatorStake[]",
 				"name": "",
 				"type": "tuple[]"
 			}
