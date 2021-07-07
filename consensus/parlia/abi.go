@@ -381,7 +381,7 @@ const validatorSetABI = `
 ]
 `
 
-const slashABI = `
+const slashingABI = `
 [
 	{
 		"anonymous": false,

@@ -68,7 +68,7 @@ var (
 
 	systemContracts = map[common.Address]bool{
 		common.HexToAddress(systemcontracts.ValidatorContract): true,
-		common.HexToAddress(systemcontracts.SlashContract):     true,
+		common.HexToAddress(systemcontracts.SlashingContract):  true,
 		common.HexToAddress(systemcontracts.StakingContract):   true,
 	}
 )
@@ -242,7 +242,7 @@ func New(
 	if err != nil {
 		panic(err)
 	}
-	slABI, err := abi.JSON(strings.NewReader(slashABI))
+	slABI, err := abi.JSON(strings.NewReader(slashingABI))
 	if err != nil {
 		panic(err)
 	}
@@ -1073,10 +1073,18 @@ func (p *Parlia) distributeIncoming(val common.Address, state *state.StateDB, he
 		return nil
 	}
 	state.SetBalance(consensus.SystemAddress, big.NewInt(0))
-	state.AddBalance(coinbase, balance)
 
-	log.Trace("distribute to validator contract", "block hash", header.Hash(), "amount", balance)
-	return p.distributeToValidator(balance, val, state, header, chain, txs, receipts, receivedTxs, usedGas, mining)
+	burn := big.NewInt(0)
+	if p.config.BurnRate > 0 {
+		burn = burn.Div(balance, big.NewInt(int64(p.config.BurnRate)))
+		state.AddBalance(common.HexToAddress(systemcontracts.FeeBurnContract), burn)
+		log.Debug("transaction fee burn", "number", header.Number, "amount", burn)
+	}
+
+	reward := new(big.Int).Sub(balance, burn)
+	state.AddBalance(coinbase, reward)
+	log.Trace("distribute to validator contract", "block hash", header.Hash(), "amount", reward)
+	return p.distributeToValidator(reward, val, state, header, chain, txs, receipts, receivedTxs, usedGas, mining)
 }
 
 // rotateValidators triggers the staked validator rotation
@@ -1112,7 +1120,7 @@ func (p *Parlia) slash(spoiledVal common.Address, state *state.StateDB, header *
 		return err
 	}
 	// get system message
-	msg := p.getSystemMessage(header.Coinbase, common.HexToAddress(systemcontracts.SlashContract), data, common.Big0)
+	msg := p.getSystemMessage(header.Coinbase, common.HexToAddress(systemcontracts.SlashingContract), data, common.Big0)
 	// apply message
 	return p.applyTransaction(msg, state, header, chain, txs, receipts, receivedTxs, usedGas, mining)
 }
