@@ -1078,7 +1078,7 @@ func (p *Parlia) distributeIncoming(val common.Address, state *state.StateDB, he
 	if p.config.BurnRate > 0 {
 		burn = burn.Div(balance, big.NewInt(int64(p.config.BurnRate)))
 		state.AddBalance(common.HexToAddress(systemcontracts.FeeBurnContract), burn)
-		log.Debug("transaction fee burn", "number", header.Number, "amount", burn)
+		log.Debug("🔥 transaction fee burn", "number", header.Number, "amount", burn)
 	}
 
 	reward := new(big.Int).Sub(balance, burn)
