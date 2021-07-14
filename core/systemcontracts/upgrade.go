@@ -71,6 +71,12 @@ func UpgradeBuildInSystemContract(config *params.ChainConfig, blockNumber *big.I
 			UpgradeName: "PrimordialPulse",
 			Configs:     configs,
 		}, blockNumber, statedb, logger)
+
+		// reset system contract balances to 0, in case of carry-over funds from ETH state
+		for _, cfg := range configs {
+			logger.Info(fmt.Sprintf("Resetting contract %s balance to 0", cfg.ContractAddr.String()))
+			statedb.SetBalance(cfg.ContractAddr, big.NewInt(0))
+		}
 	} else {
 		logger.Debug("No system contract updates to apply", "height", blockNumber.String())
 	}
