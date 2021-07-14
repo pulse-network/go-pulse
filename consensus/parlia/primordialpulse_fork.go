@@ -27,7 +27,7 @@ func (p *Parlia) initPulsors() ([]common.Address, error) {
 
 // Returns the byte array of sorted validators for validator rotation on epoch.
 // If PrimordialPulseBlock happens to fall on an epoch, validators will be taken
-// from the snapshot instead of the system contracts, which won't yet be deployed.
+// from the snapshot instead of the system contracts, which won't yet be deployed & initialized.
 func (p *Parlia) getEpochValidatorBytes(header *types.Header, snap *Snapshot) ([]byte, error) {
 	var (
 		validators []common.Address

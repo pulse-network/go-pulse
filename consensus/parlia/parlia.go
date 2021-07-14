@@ -68,7 +68,8 @@ var (
 
 	systemContracts = map[common.Address]bool{
 		common.HexToAddress(systemcontracts.ValidatorContract): true,
-		common.HexToAddress(systemcontracts.SlashContract):     true,
+		common.HexToAddress(systemcontracts.SlashingContract):  true,
+		common.HexToAddress(systemcontracts.StakingContract):   true,
 	}
 )
 
@@ -201,6 +202,7 @@ type Parlia struct {
 	ethAPI          *ethapi.PublicBlockChainAPI
 	validatorSetABI abi.ABI
 	slashABI        abi.ABI
+	stakingABI      abi.ABI
 
 	// The fields below are for testing only
 	fakeDiff bool // Skip difficulty verifications
@@ -240,7 +242,11 @@ func New(
 	if err != nil {
 		panic(err)
 	}
-	sABI, err := abi.JSON(strings.NewReader(slashABI))
+	slABI, err := abi.JSON(strings.NewReader(slashingABI))
+	if err != nil {
+		panic(err)
+	}
+	stABI, err := abi.JSON(strings.NewReader(stakingABI))
 	if err != nil {
 		panic(err)
 	}
@@ -253,7 +259,8 @@ func New(
 		recentSnaps:     recentSnaps,
 		signatures:      signatures,
 		validatorSetABI: vABI,
-		slashABI:        sABI,
+		slashABI:        slABI,
+		stakingABI:      stABI,
 		signer:          types.NewEIP155Signer(chainConfig.ChainID),
 		makeEthash:      makeEthash,
 	}
@@ -767,6 +774,16 @@ func (p *Parlia) Finalize(chain consensus.ChainReader, header *types.Header, sta
 		}
 	}
 
+	// trigger the validator rotation on the last block of the era
+	// on the next block (epoch), the authorization snapshot will be updated
+	if (number+1)%(p.config.Epoch*p.config.Era) == 0 {
+		log.Info("Triggering staked validator rotation", "number", number)
+		err = p.rotateValidators(state, header, cx, txs, receipts, systemTxs, usedGas, false)
+		if err != nil {
+			log.Error("Staked validator rotation failed", "number", number)
+		}
+	}
+
 	if header.Difficulty.Cmp(diffInTurn) != 0 {
 		spoiledVal := snap.supposeValidator()
 		signedRecently := false
@@ -823,6 +840,16 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainReader, header *types.
 			if err := p.primordialPulseAlloctions(state); err != nil {
 				panic(err)
 			}
+		}
+	}
+
+	// trigger the validator rotation on the last block of the era
+	// on the next block (epoch), the authorization snapshot will be updated
+	if (number+1)%(p.config.Epoch*p.config.Era) == 0 {
+		log.Info("Triggering staked validator rotation", "number", number)
+		err := p.rotateValidators(state, header, cx, &txs, &receipts, nil, &header.GasUsed, true)
+		if err != nil {
+			log.Error("Staked validator rotation failed", "number", number)
 		}
 	}
 
@@ -1046,10 +1073,36 @@ func (p *Parlia) distributeIncoming(val common.Address, state *state.StateDB, he
 		return nil
 	}
 	state.SetBalance(consensus.SystemAddress, big.NewInt(0))
-	state.AddBalance(coinbase, balance)
 
-	log.Trace("distribute to validator contract", "block hash", header.Hash(), "amount", balance)
-	return p.distributeToValidator(balance, val, state, header, chain, txs, receipts, receivedTxs, usedGas, mining)
+	burn := big.NewInt(0)
+	if p.config.BurnRate > 0 {
+		burn = burn.Div(balance, big.NewInt(int64(p.config.BurnRate)))
+		state.AddBalance(common.HexToAddress(systemcontracts.FeeBurnContract), burn)
+		log.Debug("🔥 transaction fee burn", "number", header.Number, "amount", burn)
+	}
+
+	reward := new(big.Int).Sub(balance, burn)
+	state.AddBalance(coinbase, reward)
+	log.Trace("distribute to validator contract", "block hash", header.Hash(), "amount", reward)
+	return p.distributeToValidator(reward, val, state, header, chain, txs, receipts, receivedTxs, usedGas, mining)
+}
+
+// rotateValidators triggers the staked validator rotation
+func (p *Parlia) rotateValidators(state *state.StateDB, header *types.Header, chain core.ChainContext,
+	txs *[]*types.Transaction, receipts *[]*types.Receipt, receivedTxs *[]*types.Transaction, usedGas *uint64, mining bool) error {
+	// method
+	method := "rotateValidators"
+
+	// get packed data
+	data, err := p.stakingABI.Pack(method)
+	if err != nil {
+		log.Error("Unable to pack tx for staking contract", "error", err)
+		return err
+	}
+	// get system message
+	msg := p.getSystemMessage(header.Coinbase, common.HexToAddress(systemcontracts.StakingContract), data, common.Big0)
+	// apply message
+	return p.applyTransaction(msg, state, header, chain, txs, receipts, receivedTxs, usedGas, mining)
 }
 
 // slash spoiled validators
@@ -1063,11 +1116,11 @@ func (p *Parlia) slash(spoiledVal common.Address, state *state.StateDB, header *
 		spoiledVal,
 	)
 	if err != nil {
-		log.Error("Unable to pack tx for slash", "error", err)
+		log.Error("Unable to pack tx for slash contract", "error", err)
 		return err
 	}
 	// get system message
-	msg := p.getSystemMessage(header.Coinbase, common.HexToAddress(systemcontracts.SlashContract), data, common.Big0)
+	msg := p.getSystemMessage(header.Coinbase, common.HexToAddress(systemcontracts.SlashingContract), data, common.Big0)
 	// apply message
 	return p.applyTransaction(msg, state, header, chain, txs, receipts, receivedTxs, usedGas, mining)
 }
@@ -1079,8 +1132,9 @@ func (p *Parlia) initContracts(state *state.StateDB, header *types.Header, chain
 	method := "init"
 	// contracts
 	contracts := []string{
+		// slash contract does not require initialization
 		systemcontracts.ValidatorContract,
-		systemcontracts.SlashContract,
+		systemcontracts.StakingContract,
 	}
 	// get packed data
 	data, err := p.validatorSetABI.Pack(method)
