@@ -35,7 +35,7 @@ PulseChain inherits and modifies the Binance Smart Chain consensus engine, Parli
 
 ## Native Token
 
-The native ETH token will become PLS on the PulseChain network. The PLS supply will be inflated 10,000x upon forking, with the extra supply being distributed to the users that sacrificed during the PulseChain sacrifice phase.
+The native ETH token will become PLS on the PulseChain network. The PLS supply will be inflated by at least 10,000x upon forking, with the extra supply being distributed to the users that sacrificed during the PulseChain sacrifice phase.
 
 PLS will be used just as ETH is used on the Ethereum network for transaction fees, as well as for delegating stake to network validators.
 
