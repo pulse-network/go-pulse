@@ -143,7 +143,7 @@ func (s *Snapshot) isMajorityFork(forkHash string) bool {
 }
 
 // apply creates a new authorization snapshot by applying the given headers to the original one
-func (s *Snapshot) apply(headers []*types.Header, chain consensus.ChainReader, parents []*types.Header, chainId *big.Int) (*Snapshot, error) {
+func (s *Snapshot) apply(headers []*types.Header, chain consensus.ChainHeaderReader, parents []*types.Header, chainId *big.Int) (*Snapshot, error) {
 	// Allow passing in no headers for cleaner code
 	if len(headers) == 0 {
 		return s, nil
@@ -252,6 +252,26 @@ func (s *Snapshot) inturn(validator common.Address) bool {
 	return validators[offset] == validator
 }
 
+func (s *Snapshot) enoughDistance(validator common.Address, header *types.Header) bool {
+	idx := s.indexOfVal(validator)
+	if idx < 0 {
+		return true
+	}
+	validatorNum := int64(len(s.validators()))
+	if validatorNum == 1 {
+		return true
+	}
+	if validator == header.Coinbase {
+		return false
+	}
+	offset := (int64(s.Number) + 1) % int64(validatorNum)
+	if int64(idx) >= offset {
+		return int64(idx)-offset >= validatorNum-2
+	} else {
+		return validatorNum+int64(idx)-offset >= validatorNum-2
+	}
+}
+
 func (s *Snapshot) indexOfVal(validator common.Address) int {
 	validators := s.validators()
 	for idx, val := range validators {
@@ -282,7 +302,7 @@ func ParseValidators(validatorsBytes []byte) ([]common.Address, error) {
 	return result, nil
 }
 
-func FindAncientHeader(header *types.Header, ite uint64, chain consensus.ChainReader, candidateParents []*types.Header) *types.Header {
+func FindAncientHeader(header *types.Header, ite uint64, chain consensus.ChainHeaderReader, candidateParents []*types.Header) *types.Header {
 	ancient := header
 	for i := uint64(1); i <= ite; i++ {
 		parentHash := ancient.ParentHash

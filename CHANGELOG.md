@@ -1,4 +1,33 @@
 # Changelog
+
+## v1.1.0
+*[\#282](https://github.com/binance-chain/bsc/pull/282) update discord link
+*[\#280](https://github.com/binance-chain/bsc/pull/280) update discord link
+*[\#227](https://github.com/binance-chain/bsc/pull/227) use more aggressive write cache policy
+
+## v1.1.0-beta
+*[\#152](https://github.com/binance-chain/bsc/pull/152) upgrade to go-ethereum 1.10.3
+
+## v1.0.7-hf.2
+BUGFIX
+* [\#194](https://github.com/binance-chain/bsc/pull/194) bump btcd to v0.20.1-beta
+
+## v1.0.7-hf.1
+BUGFIX
+* [\#190](https://github.com/binance-chain/bsc/pull/190) fix disk increase dramaticly
+* [\#191](https://github.com/binance-chain/bsc/pull/191) fix the reorg routine of tx pool stuck issue
+
+## v1.0.7
+* [\#120](https://github.com/binance-chain/bsc/pull/120) add health check endpoint
+* [\#116](https://github.com/binance-chain/bsc/pull/116) validator only write database state when enough distance 
+* [\#115](https://github.com/binance-chain/bsc/pull/115) add batch query methods
+* [\#112](https://github.com/binance-chain/bsc/pull/112) apply max commit tx time for miner worker to avoid empty block
+* [\#101](https://github.com/binance-chain/bsc/pull/101) apply block number limit for the `eth_getLogs` api
+* [\#99](https://github.com/binance-chain/bsc/pull/99) enable directbroadcast flag to decrease the block propagation time
+* [\#90](https://github.com/binance-chain/bsc/pull/90) add tini in docker image 
+* [\#84](https://github.com/binance-chain/bsc/pull/84) add jq in docker image
+
+
 ## v1.0.6
 * [\#68](https://github.com/binance-chain/bsc/pull/68) apply mirror sync upgrade on mainnet
 
