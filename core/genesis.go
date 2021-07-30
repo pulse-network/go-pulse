@@ -219,9 +219,9 @@ func SetupGenesisBlockWithOverride(db ethdb.Database, genesis *Genesis, override
 	// Special case: don't change the existing config of a non-mainnet chain if no new
 	// config is supplied. These chains would get AllProtocolChanges (and a compat error)
 	// if we just continued here.
-	// The full node of two BSC testnets may run without genesis file after been inited.
-	if genesis == nil && stored != params.MainnetGenesisHash &&
-		stored != params.ChapelGenesisHash && stored != params.RialtoGenesisHash && stored != params.BSCGenesisHash {
+	// Support changing config for PrimordialPulse fork.
+	if genesis == nil && (storedcfg.PrimordialPulseBlock != nil ||
+		stored != params.MainnetGenesisHash && stored != params.ChapelGenesisHash && stored != params.RialtoGenesisHash && stored != params.BSCGenesisHash) {
 		return storedcfg, stored, nil
 	}
 	// Check config compatibility and write the config. Compatibility errors
