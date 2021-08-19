@@ -136,7 +136,7 @@ As a developer, sooner rather than later you'll want to start interacting with `
 PulseChain network via your own programs and not manually through the console. To aid
 this, `geth` has built-in support for a JSON-RPC based APIs ([standard APIs](https://eth.wiki/json-rpc/API)
 and [`geth` specific APIs](https://geth.ethereum.org/docs/rpc/server)).
-These can be exposed via HTTP, WebSockets and IPC (UNIX sockets on UNIX based
+These can be exposed via HTTP, WebSockets, and IPC (UNIX sockets on UNIX based
 platforms, and named pipes on Windows).
 
 The IPC interface is enabled by default and exposes all the APIs supported by `geth`,
@@ -161,7 +161,7 @@ HTTP based JSON-RPC API options:
   * `--ipcpath` Filename for IPC socket/pipe within the datadir (explicit paths escape it)
 
 You'll need to use your own programming environments' capabilities (libraries, tools, etc) to
-connect via HTTP, WS or IPC to a `geth` node configured with the above flags and you'll
+connect via HTTP, WS, or IPC to a `geth` node configured with the above flags and you'll
 need to speak [JSON-RPC](https://www.jsonrpc.org/specification) on all transports. You
 can reuse the same connection for multiple requests!
 
@@ -176,7 +176,7 @@ APIs!**
 Thank you for considering to help out with the source code! We welcome contributions
 from anyone on the internet, and are grateful for even the smallest of fixes!
 
-If you'd like to contribute to bsc, please fork, fix, commit and send a pull request
+If you'd like to contribute to bsc, please fork, fix, commit, and send a pull request
 for the maintainers to review and merge into the main code base. If you wish to submit
 more complex changes though, please check up with the core devs first on [our discord channel](https://discord.gg/5Z3C3SdxDw)
 to ensure those changes are in line with the general philosophy of the project and/or get
