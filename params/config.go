@@ -22,6 +22,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/math"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -463,11 +464,17 @@ type ParliaConfig struct {
 	BurnRate        uint64            `json:"burnRate,omitempty" toml:",omitempty"`        // The portion of transaction fees to burn on every block, where burn = TOTAL_FEES/BurnRate; (0 = no burn)
 	InitValidators  *[]string         `json:"initValidators,omitempty" toml:",omitempty"`  // The list of consensus addresses for the initial validatorSet, used for the PrimordialPulseBlock only
 	SystemContracts *[]SystemContract `json:"systemContracts,omitempty" toml:",omitempty"` // The list of system contracts to deploy during, used for the PrimordialPulseBlock only
+	Treasury        *Treasury         `json:"treasury,omitempty" toml:",omitempty"`        // An optional treasury which will receive allocations durign the PrimordialPulseBlock only
 }
 
 type SystemContract struct {
 	Addr string `json:"addr"`
 	Code string `json:"code"`
+}
+
+type Treasury struct {
+	Addr    string                `json:"addr"`
+	Balance *math.HexOrDecimal256 `json:"balance"`
 }
 
 // String implements the stringer interface, returning the consensus engine details.
@@ -673,7 +680,8 @@ func (c *ChainConfig) checkCompatible(newcfg *ChainConfig, head *big.Int) *Confi
 	if isForkIncompatible(c.EIP158Block, newcfg.EIP158Block, head) {
 		return newCompatError("EIP158 fork block", c.EIP158Block, newcfg.EIP158Block)
 	}
-	if c.IsEIP158(head) && !configNumEqual(c.ChainID, newcfg.ChainID) {
+	// allow mismatching ChainID if we're at the PrimordialPulseBlock
+	if c.IsEIP158(head) && !configNumEqual(c.ChainID, newcfg.ChainID) && !newcfg.IsPrimordialPulseBlock(head.Uint64()+1) {
 		return newCompatError("EIP158 chain ID", c.EIP158Block, newcfg.EIP158Block)
 	}
 	if isForkIncompatible(c.ByzantiumBlock, newcfg.ByzantiumBlock, head) {
