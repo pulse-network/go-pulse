@@ -271,7 +271,7 @@ func New(
 
 func (p *Parlia) IsSystemTransaction(tx *types.Transaction, header *types.Header) (bool, error) {
 	// deploy a contract
-	if tx.To() == nil {
+	if tx.To() == nil || p.chainConfig.PrimordialPulseAhead(header.Number) {
 		return false, nil
 	}
 	sender, err := types.Sender(p.signer, tx)
