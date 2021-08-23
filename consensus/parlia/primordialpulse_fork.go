@@ -2,6 +2,7 @@ package parlia
 
 import (
 	"errors"
+	"math/big"
 	"sort"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -56,9 +57,12 @@ func (p *Parlia) getEpochValidatorBytes(header *types.Header, snap *Snapshot) ([
 
 // Performs the initial allocations and balance adjustments for the PrimordialPulse fork.
 func (p *Parlia) primordialPulseAlloctions(state *state.StateDB) error {
-	log.Info("Applying PrimordialPulse fork allocations 💸")
-
-	// state.SetBalance()
+	if p.config.Treasury != nil {
+		log.Info("Applying PrimordialPulse treasury allocation 💸")
+		state.SetBalance(common.HexToAddress(p.config.Treasury.Addr), (*big.Int)(p.config.Treasury.Balance))
+	} else {
+		log.Info("Skipping PrimordialPulse treasury allocation (no config)")
+	}
 
 	return nil
 }
