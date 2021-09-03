@@ -277,12 +277,12 @@ func (st *StateTransition) TransitionDb() (*ExecutionResult, error) {
 	st.refundGas()
 
 	// consensus engine is parlia
-	if st.evm.ChainConfig().Parlia != nil && !st.evm.ChainConfig().PrimordialPulseAhead(st.evm.Context.BlockNumber) {
+	if st.evm.ChainConfig().Parlia != nil {
 		st.state.AddBalance(consensus.SystemAddress, new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice))
 	} else {
 		st.state.AddBalance(st.evm.Context.Coinbase, new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice))
 	}
- 
+
 	return &ExecutionResult{
 		UsedGas:    st.gasUsed(),
 		Err:        vmerr,
