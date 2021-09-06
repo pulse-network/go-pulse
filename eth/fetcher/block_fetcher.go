@@ -805,12 +805,11 @@ func (f *BlockFetcher) importBlocks(peer string, block *types.Block) {
 			go f.broadcastBlock(block, true)
 
 		case consensus.ErrFutureBlock:
-			log.Error("Received future block", "peer", peer, "number", block.Number(), "hash", hash, "err", err)
-			f.dropPeer(peer)
+			// Weird future block, don't fail, but neither propagate
 
 		default:
 			// Something went very wrong, drop the peer
-			log.Error("Propagated block verification failed", "peer", peer, "number", block.Number(), "hash", hash, "err", err)
+			log.Debug("Propagated block verification failed", "peer", peer, "number", block.Number(), "hash", hash, "err", err)
 			f.dropPeer(peer)
 			return
 		}
@@ -834,15 +833,17 @@ func (f *BlockFetcher) importBlocks(peer string, block *types.Block) {
 // internal state.
 func (f *BlockFetcher) forgetHash(hash common.Hash) {
 	// Remove all pending announces and decrement DOS counters
-	for _, announce := range f.announced[hash] {
-		f.announces[announce.origin]--
-		if f.announces[announce.origin] <= 0 {
-			delete(f.announces, announce.origin)
+	if announceMap, ok := f.announced[hash]; ok {
+		for _, announce := range announceMap {
+			f.announces[announce.origin]--
+			if f.announces[announce.origin] <= 0 {
+				delete(f.announces, announce.origin)
+			}
 		}
-	}
-	delete(f.announced, hash)
-	if f.announceChangeHook != nil {
-		f.announceChangeHook(hash, false)
+		delete(f.announced, hash)
+		if f.announceChangeHook != nil {
+			f.announceChangeHook(hash, false)
+		}
 	}
 	// Remove any pending fetches and decrement the DOS counters
 	if announce := f.fetching[hash]; announce != nil {

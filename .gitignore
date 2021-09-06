@@ -21,6 +21,8 @@ build/_vendor/pkg
 *~
 .project
 .settings
+genesis.json
+config.toml
 
 # used by the Makefile
 /build/_workspace/
@@ -47,3 +49,4 @@ profile.cov
 /dashboard/assets/package-lock.json
 
 **/yarn-error.log
+vendor

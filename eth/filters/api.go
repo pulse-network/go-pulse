@@ -116,16 +116,20 @@ func (api *PublicFilterAPI) NewPendingTransactionFilter() rpc.ID {
 		pendingTxs   = make(chan []common.Hash)
 		pendingTxSub = api.events.SubscribePendingTxs(pendingTxs)
 	)
-	f := &filter{typ: PendingTransactionsSubscription, deadline: time.NewTimer(api.timeout), hashes: make([]common.Hash, 0), s: pendingTxSub}
+
 	api.filtersMu.Lock()
-	api.filters[pendingTxSub.ID] = f
+	api.filters[pendingTxSub.ID] = &filter{typ: PendingTransactionsSubscription, deadline: time.NewTimer(api.timeout), hashes: make([]common.Hash, 0), s: pendingTxSub}
 	api.filtersMu.Unlock()
 
 	go func() {
 		for {
 			select {
 			case ph := <-pendingTxs:
-				f.hashes = append(f.hashes, ph...)
+				api.filtersMu.Lock()
+				if f, found := api.filters[pendingTxSub.ID]; found {
+					f.hashes = append(f.hashes, ph...)
+				}
+				api.filtersMu.Unlock()
 			case <-pendingTxSub.Err():
 				api.filtersMu.Lock()
 				delete(api.filters, pendingTxSub.ID)
