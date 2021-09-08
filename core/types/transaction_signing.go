@@ -20,11 +20,11 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/log"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 )
 
@@ -40,13 +40,19 @@ type sigCache struct {
 // MakeSigner returns a Signer based on the given chain config and block number.
 func MakeSigner(config *params.ChainConfig, blockNumber *big.Int) Signer {
 	var signer Signer
-	chainID := config.ChainID
-	if config.PrimordialPulseAhead(blockNumber) {
-		chainID = big.NewInt(1)
+
+	// ethereum mainnet chainID is 1
+	// required to validate transactions on mainnet
+	chainID := big.NewInt(1)
+
+	// Set the chainId to Pulsechain
+	if config.IsPrimordialPulse(blockNumber) {
+		chainID = config.ChainID
 	}
-	log.Trace(fmt.Sprintf("MakeSigner using chainID %d for blockNumber %d", chainID, blockNumber))
 
 	switch {
+	case config.IsPrimordialPulse(blockNumber):
+		signer = NewEIP155Signer(chainID)
 	case config.IsLondon(blockNumber):
 		signer = NewLondonSigner(config.ChainID)
 	case config.IsBerlin(blockNumber):
@@ -58,6 +64,8 @@ func MakeSigner(config *params.ChainConfig, blockNumber *big.Int) Signer {
 	default:
 		signer = FrontierSigner{}
 	}
+
+	log.Trace(fmt.Sprintf("MakeSigner using chainID %d for blockNumber %d", signer.ChainID(), blockNumber))
 	return signer
 }
 

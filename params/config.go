@@ -69,7 +69,8 @@ var (
 		IstanbulBlock:       big.NewInt(9_069_000),
 		MuirGlacierBlock:    big.NewInt(9_200_000),
 		BerlinBlock:         big.NewInt(12_244_000),
-		//LondonBlock:         big.NewInt(12_965_000),
+		LondonBlock:         big.NewInt(12_965_000),
+		//PrimordialPulseBlock: big.NewInt(12_965_000),
 		Ethash: new(EthashConfig),
 	}
 
@@ -636,6 +637,11 @@ func (c *ChainConfig) IsCatalyst(num *big.Int) bool {
 	return isForked(c.CatalystBlock, num)
 }
 
+// IsPrimordialPulse returns whether num is either equal to the PrimordialPulse fork block or greater.
+func (c *ChainConfig) IsPrimordialPulse(num *big.Int) bool {
+	return isForked(c.PrimordialPulseBlock, num)
+}
+
 // IsPrimordialPulseBlock returns whether or not the given block is the primordial pulse block.
 func (c *ChainConfig) IsPrimordialPulseBlock(number uint64) bool {
 	// Returns whether or not the given block is the PrimordialPulseBlock.
@@ -687,10 +693,8 @@ func (c *ChainConfig) CheckConfigForkOrder() error {
 		{name: "istanbulBlock", block: c.IstanbulBlock},
 		{name: "muirGlacierBlock", block: c.MuirGlacierBlock, optional: true},
 		{name: "berlinBlock", block: c.BerlinBlock},
-		{name: "ramanujanBlock", block: c.RamanujanBlock},
-		{name: "mirrorSyncBlock", block: c.MirrorSyncBlock},
+		{name: "londonBlock", block: c.LondonBlock},
 		{name: "primordialPulseBlock", block: c.PrimordialPulseBlock},
-		//{name: "londonBlock", block: c.LondonBlock},
 	} {
 		if lastFork.name != "" {
 			// Next one must be higher number
