@@ -125,13 +125,15 @@ type EVM struct {
 // NewEVM returns a new EVM. The returned EVM is not thread safe and should
 // only ever be used *once*.
 func NewEVM(blockCtx BlockContext, txCtx TxContext, statedb StateDB, chainConfig *params.ChainConfig, config Config) *EVM {
-
-	// Copy struct, to not change the underlying ChainConfig
 	msgChainConfig := chainConfig
 
 	if !chainConfig.IsPrimordialPulse(blockCtx.BlockNumber) {
-		// Set to ethereum mainnet
-		msgChainConfig.ChainID = big.NewInt(1)
+		// create a shallow of chainConfig struct and set to ethereum mainnet
+		chainCfgCpy := *chainConfig
+		chainCfgCpy.ChainID = big.NewInt(1)
+
+		// use the new chainCfgCpy
+		msgChainConfig = &chainCfgCpy
 	}
 
 	evm := &EVM{
