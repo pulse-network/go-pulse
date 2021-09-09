@@ -45,14 +45,10 @@ func MakeSigner(config *params.ChainConfig, blockNumber *big.Int) Signer {
 	// required to validate transactions on mainnet
 	chainID := big.NewInt(1)
 
-	// Set the chainId to Pulsechain
-	if config.IsPrimordialPulse(blockNumber) {
-		chainID = config.ChainID
-	}
-
 	switch {
 	case config.IsPrimordialPulse(blockNumber):
-		signer = NewEIP155Signer(chainID)
+		// Set the chainId to Pulsechain
+		signer = NewEIP155Signer(config.ChainID)
 	case config.IsLondon(blockNumber):
 		signer = NewLondonSigner(config.ChainID)
 	case config.IsBerlin(blockNumber):
