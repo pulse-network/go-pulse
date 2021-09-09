@@ -17,6 +17,7 @@
 package vm
 
 import (
+	"fmt"
 	"hash"
 	"sync/atomic"
 
@@ -269,6 +270,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		case err != nil:
 			return nil, err
 		case operation.reverts:
+			log.Trace(fmt.Sprintf("Reverted TX: %v: Message: %v", contract.CallerAddress.Hex(), string(in.returnData)))
 			return res, ErrExecutionReverted
 		case operation.halts:
 			return res, nil
