@@ -74,7 +74,7 @@ func New(eth Backend, config *Config, chainConfig *params.ChainConfig, mux *even
 		exitCh:  make(chan struct{}),
 		startCh: make(chan common.Address),
 		stopCh:  make(chan struct{}),
-		worker:  newWorker(config, chainConfig, engine, eth, mux, isLocalBlock, false),
+		worker:  newWorker(config, chainConfig, engine, eth, mux, isLocalBlock, true),
 	}
 	go miner.update()
 
@@ -183,20 +183,7 @@ func (miner *Miner) SetRecommitInterval(interval time.Duration) {
 
 // Pending returns the currently pending block and associated state.
 func (miner *Miner) Pending() (*types.Block, *state.StateDB) {
-	if miner.worker.isRunning() {
-		return miner.worker.pending()
-	} else {
-		// fallback to latest block
-		block := miner.worker.chain.CurrentBlock()
-		if block == nil {
-			return nil, nil
-		}
-		stateDb, err := miner.worker.chain.StateAt(block.Root())
-		if err != nil {
-			return nil, nil
-		}
-		return block, stateDb
-	}
+	return miner.worker.pending()
 }
 
 // PendingBlock returns the currently pending block.
@@ -205,17 +192,23 @@ func (miner *Miner) Pending() (*types.Block, *state.StateDB) {
 // simultaneously, please use Pending(), as the pending state can
 // change between multiple method calls
 func (miner *Miner) PendingBlock() *types.Block {
-	if miner.worker.isRunning() {
-		return miner.worker.pendingBlock()
-	} else {
-		// fallback to latest block
-		return miner.worker.chain.CurrentBlock()
-	}
+	return miner.worker.pendingBlock()
+}
+
+// PendingBlockAndReceipts returns the currently pending block and corresponding receipts.
+func (miner *Miner) PendingBlockAndReceipts() (*types.Block, types.Receipts) {
+	return miner.worker.pendingBlockAndReceipts()
 }
 
 func (miner *Miner) SetEtherbase(addr common.Address) {
 	miner.coinbase = addr
 	miner.worker.setEtherbase(addr)
+}
+
+// SetGasCeil sets the gaslimit to strive for when mining blocks post 1559.
+// For pre-1559 blocks, it sets the ceiling.
+func (miner *Miner) SetGasCeil(ceil uint64) {
+	miner.worker.setGasCeil(ceil)
 }
 
 // EnablePreseal turns on the preseal mining feature. It's enabled by default.
