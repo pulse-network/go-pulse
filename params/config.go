@@ -693,7 +693,7 @@ func (c *ChainConfig) CheckConfigForkOrder() error {
 		{name: "istanbulBlock", block: c.IstanbulBlock},
 		{name: "muirGlacierBlock", block: c.MuirGlacierBlock, optional: true},
 		{name: "berlinBlock", block: c.BerlinBlock},
-		{name: "londonBlock", block: c.LondonBlock},
+		//{name: "londonBlock", block: c.LondonBlock},
 		{name: "primordialPulseBlock", block: c.PrimordialPulseBlock},
 	} {
 		if lastFork.name != "" {
