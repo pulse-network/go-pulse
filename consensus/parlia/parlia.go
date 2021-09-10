@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"io"
 	"math"
 	"math/big"
@@ -14,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/davecgh/go-spew/spew"
 
 	lru "github.com/hashicorp/golang-lru"
 	"golang.org/x/crypto/sha3"
@@ -670,6 +671,11 @@ func (p *Parlia) verifySeal(chain consensus.ChainHeaderReader, header *types.Hea
 // Prepare implements consensus.Engine, preparing all the consensus fields of the
 // header for running the transactions on top.
 func (p *Parlia) Prepare(chain consensus.ChainHeaderReader, header *types.Header) error {
+	// Bail out early if the Authorize() method for block mining has not been called
+	if p.signTxFn == nil {
+		return errUnauthorizedValidator
+	}
+
 	header.Coinbase = p.val
 	header.Nonce = types.BlockNonce{}
 
@@ -1270,7 +1276,7 @@ func (p *Parlia) applyTransaction(
 	return nil
 }
 
-// SealHash ===========================     utility function        ==========================
+// ===========================     utility function        ==========================
 // SealHash returns the hash of a block prior to it being sealed.
 func SealHash(header *types.Header, chainId *big.Int) (hash common.Hash) {
 	hasher := sha3.NewLegacyKeccak256()
