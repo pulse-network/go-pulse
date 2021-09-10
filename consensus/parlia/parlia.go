@@ -252,8 +252,7 @@ func New(chainConfig *params.ChainConfig, db ethdb.Database, ethAPI *ethapi.Publ
 		slashABI:        slABI,
 		stakingABI:      stABI,
 		signer:          types.NewEIP155Signer(chainConfig.ChainID),
-
-		makeEthash: makeEthash,
+		makeEthash:      makeEthash,
 	}
 }
 
@@ -668,6 +667,11 @@ func (p *Parlia) verifySeal(chain consensus.ChainHeaderReader, header *types.Hea
 // Prepare implements consensus.Engine, preparing all the consensus fields of the
 // header for running the transactions on top.
 func (p *Parlia) Prepare(chain consensus.ChainHeaderReader, header *types.Header) error {
+	// Bail out early if the Authorize() method for block mining has not been called
+	if p.signTxFn == nil {
+		return errUnauthorizedValidator
+	}
+
 	header.Coinbase = p.val
 	header.Nonce = types.BlockNonce{}
 
@@ -1268,7 +1272,7 @@ func (p *Parlia) applyTransaction(
 	return nil
 }
 
-// SealHash ===========================     utility function        ==========================
+// ===========================     utility function        ==========================
 // SealHash returns the hash of a block prior to it being sealed.
 func SealHash(header *types.Header, chainId *big.Int) (hash common.Hash) {
 	hasher := sha3.NewLegacyKeccak256()
