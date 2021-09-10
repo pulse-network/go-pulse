@@ -127,7 +127,7 @@ type EVM struct {
 func NewEVM(blockCtx BlockContext, txCtx TxContext, statedb StateDB, chainConfig *params.ChainConfig, config Config) *EVM {
 	msgChainConfig := chainConfig
 
-	if !chainConfig.IsPrimordialPulse(blockCtx.BlockNumber) {
+	if chainConfig.PrimordialPulseAhead(blockCtx.BlockNumber) {
 		// create a shallow of chainConfig struct and set to ethereum mainnet
 		chainCfgCpy := *chainConfig
 		chainCfgCpy.ChainID = big.NewInt(1)
