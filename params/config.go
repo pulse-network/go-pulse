@@ -80,7 +80,7 @@ var (
 		SectionHead:  common.HexToHash("0x50fd3cec5376ede90ef9129772022690cd1467f22c18abb7faa11e793c51e9c9"),
 		CHTRoot:      common.HexToHash("0xb57b4b22a77b5930847b1ca9f62daa11eae6578948cb7b18997f2c0fe5757025"),
 		BloomRoot:    common.HexToHash("0xa338f8a868a194fa90327d0f5877f656a9f3640c618d2a01a01f2e76ef9ef954"),
-}
+	}
 
 	// MainnetCheckpointOracle contains a set of configs for the main network oracle.
 	MainnetCheckpointOracle = &CheckpointOracleConfig{
@@ -649,7 +649,7 @@ func (c *ChainConfig) IsPrimordialPulseBlock(number uint64) bool {
 }
 
 // Returns true if there is a PrimordialPulse block in the future, indicating this chain
-// should still be evaluated using the ethash consensus engine.
+// should still be evaluated using the ethash consensus engine and with mainnet ChainID.
 func (c *ChainConfig) PrimordialPulseAhead(number *big.Int) bool {
 	return c.PrimordialPulseBlock != nil && c.PrimordialPulseBlock.Cmp(number) > 0
 }

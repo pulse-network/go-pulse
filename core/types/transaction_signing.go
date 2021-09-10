@@ -20,11 +20,11 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/log"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 )
 
@@ -41,14 +41,16 @@ type sigCache struct {
 func MakeSigner(config *params.ChainConfig, blockNumber *big.Int) Signer {
 	var signer Signer
 
-	// ethereum mainnet chainID is 1
-	// required to validate transactions on mainnet
-	chainID := big.NewInt(1)
+	chainID := config.ChainID
+	if config.PrimordialPulseAhead(blockNumber) {
+		// ethereum mainnet chainID is 1
+		// required to validate transactions on mainnet
+		chainID = big.NewInt(1)
+	}
 
 	switch {
 	case config.IsPrimordialPulse(blockNumber):
-		// Set the chainId to Pulsechain
-		signer = NewEIP155Signer(config.ChainID)
+		signer = NewEIP155Signer(chainID)
 	case config.IsLondon(blockNumber):
 		signer = NewLondonSigner(chainID)
 	case config.IsBerlin(blockNumber):
