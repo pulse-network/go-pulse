@@ -487,7 +487,7 @@ func (s *Ethereum) StartMining(threads int) error {
 			}
 
 			parlia.Authorize(eb, wallet.SignData, wallet.SignTx)
-			log.Info("Parlia Etherbase account authorized", "config")
+			log.Info("Parlia Etherbase account authorized", "account", eb)
 		}
 		// If mining is started, we can disable the transaction rejection mechanism
 		// introduced to speed sync times.
