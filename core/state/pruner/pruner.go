@@ -277,7 +277,7 @@ func (p *Pruner) Prune(root common.Hash) error {
 		// bottom-most diff layer. Try to find the bottom-most snapshot
 		// layer with state available.
 		//
-		// Note HEAD is ignored. Usually there is the associated
+		// Note HEAD and HEAD-1 is ignored. Usually there is the associated
 		// state available, but we don't want to use the topmost state
 		// as the pruning target.
 		var found bool
