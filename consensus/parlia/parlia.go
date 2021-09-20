@@ -826,9 +826,7 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *
 	}
 
 	number := header.Number.Uint64()
-	// TODO: Fix startup on a clean blockchain. Panics because there isn't a valid signing account.
-	//     header.Number.Cmp(common.Big1) == 0 ||
-	if p.chainConfig.IsPrimordialPulseBlock(number) {
+	if header.Number.Cmp(common.Big1) == 0 || p.chainConfig.IsPrimordialPulseBlock(number) {
 		log.Info("Initializing system contracts", "number", header.Number)
 
 		if err := p.initContracts(state, header, cx, &txs, &receipts, nil, &header.GasUsed, true); err != nil {
