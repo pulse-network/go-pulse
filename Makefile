@@ -17,6 +17,11 @@ geth:
 	@echo "Done building."
 	@echo "Run \"$(GOBIN)/geth\" to launch geth."
 
+geth-debug:
+	$(GORUN) build/ci.go install -debug ./cmd/geth
+	@echo "Done building debug."
+	@echo "Run \"$(GOBIN)/geth\" to launch geth."
+
 all:
 	$(GORUN) build/ci.go install
 
