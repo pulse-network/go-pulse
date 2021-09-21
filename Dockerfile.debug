@@ -1,0 +1,38 @@
+# Support setting various labels on the final image
+ARG COMMIT=""
+ARG VERSION=""
+ARG BUILDNUM=""
+
+# Build Geth in a stock Go builder container
+FROM golang:1.17-alpine as builder
+
+RUN apk add --no-cache make gcc musl-dev linux-headers git bash
+
+RUN go get github.com/go-delve/delve/cmd/dlv
+
+ADD . /go-ethereum
+RUN cd /go-ethereum && make geth-debug
+
+# Pull Geth into a second stage deploy alpine container
+FROM alpine:latest
+
+RUN apk add --no-cache ca-certificates curl jq tini
+COPY --from=builder /go/bin/dlv /usr/local/bin/
+COPY --from=builder /go-ethereum/build/bin/geth /usr/local/bin/
+
+EXPOSE 8575 8576 30123 30312 30312/udp
+ENTRYPOINT [ \
+             "/usr/local/bin/dlv", \
+             "--listen=:30123", \
+             "--accept-multiclient", \
+             "--headless=true", \
+             "--api-version=2", \
+             "exec", \
+             "/usr/local/bin/geth" \
+            ]
+# Add some metadata labels to help programatic image consumption
+ARG COMMIT=""
+ARG VERSION=""
+ARG BUILDNUM=""
+
+LABEL commit="$COMMIT" version="$VERSION" buildnum="$BUILDNUM"

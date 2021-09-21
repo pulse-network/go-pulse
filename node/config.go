@@ -194,8 +194,6 @@ type Config struct {
 	// Logger is a custom logger to use with the p2p.Server.
 	Logger log.Logger `toml:",omitempty"`
 
-	LogConfig *LogConfig `toml:",omitempty"`
-
 	staticNodesWarning     bool
 	trustedNodesWarning    bool
 	oldGethResourceWarning bool
@@ -544,11 +542,4 @@ func (c *Config) warnOnce(w *bool, format string, args ...interface{}) {
 	}
 	l.Warn(fmt.Sprintf(format, args...))
 	*w = true
-}
-
-type LogConfig struct {
-	FileRoot     string
-	FilePath     string
-	MaxBytesSize uint
-	Level        string
 }

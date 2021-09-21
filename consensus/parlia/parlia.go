@@ -184,22 +184,17 @@ func ParliaRLP(header *types.Header, chainId *big.Int) []byte {
 
 // Parlia is the consensus engine of BSC
 type Parlia struct {
-	chainConfig *params.ChainConfig  // Chain config
-	config      *params.ParliaConfig // Consensus engine configuration parameters for parlia consensus
-	genesisHash common.Hash
-	db          ethdb.Database // Database to store and retrieve snapshot checkpoints
-
-	recentSnaps *lru.ARCCache // Snapshots for recent block to speed up
-	signatures  *lru.ARCCache // Signatures of recent blocks to speed up mining
-
-	signer types.Signer
-
-	val      common.Address // Ethereum address of the signing key
-	signFn   SignerFn       // Signer function to authorize hashes with
-	signTxFn SignerTxFn
-
-	lock sync.RWMutex // Protects the signer fields
-
+	chainConfig     *params.ChainConfig  // Chain config
+	config          *params.ParliaConfig // Consensus engine configuration parameters for parlia consensus
+	genesisHash     common.Hash
+	db              ethdb.Database // Database to store and retrieve snapshot checkpoints
+	recentSnaps     *lru.ARCCache  // Snapshots for recent block to speed up
+	signatures      *lru.ARCCache  // Signatures of recent blocks to speed up mining
+	signer          types.Signer   // Ethereum address of the signing key
+	val             common.Address // Ethereum address of the signing key
+	signFn          SignerFn       // Signer function to authorize hashes with
+	signTxFn        SignerTxFn     //Sign transaction function to sign tx
+	lock            sync.RWMutex   // Protects the signer fields
 	ethAPI          *ethapi.PublicBlockChainAPI
 	validatorSetABI abi.ABI
 	slashABI        abi.ABI
@@ -207,7 +202,6 @@ type Parlia struct {
 
 	// The fields below are for testing only
 	fakeDiff bool // Skip difficulty verifications
-
 	// Used for synchronizing pulse chain prior to the PrimordialPulseBlock
 	// Will be lazily instantiated as needed
 	makeEthash func() *ethash.Ethash
@@ -215,13 +209,7 @@ type Parlia struct {
 }
 
 // New creates a Parlia consensus engine.
-func New(
-	chainConfig *params.ChainConfig,
-	db ethdb.Database,
-	ethAPI *ethapi.PublicBlockChainAPI,
-	genesisHash common.Hash,
-	makeEthash func() *ethash.Ethash,
-) *Parlia {
+func New(chainConfig *params.ChainConfig, db ethdb.Database, ethAPI *ethapi.PublicBlockChainAPI, genesisHash common.Hash, makeEthash func() *ethash.Ethash) *Parlia {
 	// get parlia config
 	parliaConfig := chainConfig.Parlia
 
@@ -251,7 +239,8 @@ func New(
 	if err != nil {
 		panic(err)
 	}
-	c := &Parlia{
+
+	return &Parlia{
 		chainConfig:     chainConfig,
 		config:          parliaConfig,
 		genesisHash:     genesisHash,
@@ -265,8 +254,6 @@ func New(
 		signer:          types.NewEIP155Signer(chainConfig.ChainID),
 		makeEthash:      makeEthash,
 	}
-
-	return c
 }
 
 func (p *Parlia) IsSystemTransaction(tx *types.Transaction, header *types.Header) (bool, error) {
@@ -680,6 +667,11 @@ func (p *Parlia) verifySeal(chain consensus.ChainHeaderReader, header *types.Hea
 // Prepare implements consensus.Engine, preparing all the consensus fields of the
 // header for running the transactions on top.
 func (p *Parlia) Prepare(chain consensus.ChainHeaderReader, header *types.Header) error {
+	// Bail out early if the Authorize() method for block mining has not been called
+	if p.signTxFn == nil {
+		return errUnauthorizedValidator
+	}
+
 	header.Coinbase = p.val
 	header.Nonce = types.BlockNonce{}
 
@@ -832,6 +824,7 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *
 	number := header.Number.Uint64()
 	if header.Number.Cmp(common.Big1) == 0 || p.chainConfig.IsPrimordialPulseBlock(number) {
 		log.Info("Initializing system contracts", "number", header.Number)
+
 		if err := p.initContracts(state, header, cx, &txs, &receipts, nil, &header.GasUsed, true); err != nil {
 			log.Error("Failed to initialize system contracts")
 		}
@@ -1058,7 +1051,7 @@ func (p *Parlia) getCurrentValidators(blockHash common.Hash) ([]common.Address, 
 	msgData := (hexutil.Bytes)(data)
 	toAddress := common.HexToAddress(systemcontracts.ValidatorContract)
 	gas := (hexutil.Uint64)(uint64(math.MaxUint64 / 2))
-	result, err := p.ethAPI.Call(ctx, ethapi.CallArgs{
+	result, err := p.ethAPI.Call(ctx, ethapi.TransactionArgs{
 		Gas:  &gas,
 		To:   &toAddress,
 		Data: &msgData,
@@ -1217,7 +1210,14 @@ func (p *Parlia) applyTransaction(
 	receivedTxs *[]*types.Transaction, usedGas *uint64, mining bool,
 ) (err error) {
 	nonce := state.GetNonce(msg.From())
-	expectedTx := types.NewTransaction(nonce, *msg.To(), msg.Value(), msg.Gas(), msg.GasPrice(), msg.Data())
+	expectedTx := types.NewTx(&types.LegacyTx{
+		Nonce:    nonce,
+		To:       msg.To(),
+		Value:    msg.Value(),
+		Gas:      msg.Gas(),
+		GasPrice: msg.GasPrice(),
+		Data:     msg.Data(),
+	})
 	expectedHash := p.signer.Hash(expectedTx)
 
 	if msg.From() == p.val && mining {
@@ -1237,7 +1237,7 @@ func (p *Parlia) applyTransaction(
 		// move to next
 		*receivedTxs = (*receivedTxs)[1:]
 	}
-	state.Prepare(expectedTx.Hash(), common.Hash{}, len(*txs))
+	state.Prepare(expectedTx.Hash(), len(*txs))
 	gasUsed, err := applyMessage(msg, state, header, p.chainConfig, chainContext)
 	if err != nil {
 		return err
@@ -1250,14 +1250,19 @@ func (p *Parlia) applyTransaction(
 		root = state.IntermediateRoot(p.chainConfig.IsEIP158(header.Number)).Bytes()
 	}
 	*usedGas += gasUsed
-	receipt := types.NewReceipt(root, false, *usedGas)
+	receipt := &types.Receipt{
+		Type:              types.LegacyTxType,
+		PostState:         common.CopyBytes(root),
+		Status:            types.ReceiptStatusSuccessful,
+		CumulativeGasUsed: *usedGas,
+	}
 	receipt.TxHash = expectedTx.Hash()
 	receipt.GasUsed = gasUsed
 
 	// Set the receipt logs and create a bloom for filtering
-	receipt.Logs = state.GetLogs(expectedTx.Hash())
+	receipt.Logs = state.GetLogs(expectedTx.Hash(), header.Hash())
 	receipt.Bloom = types.CreateBloom(types.Receipts{receipt})
-	receipt.BlockHash = state.BlockHash()
+	receipt.BlockHash = header.Hash()
 	receipt.BlockNumber = header.Number
 	receipt.TransactionIndex = uint(state.TxIndex())
 	*receipts = append(*receipts, receipt)
