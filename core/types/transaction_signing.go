@@ -47,8 +47,7 @@ func MakeSigner(config *params.ChainConfig, blockNumber *big.Int) Signer {
 
 	switch {
 	case config.IsPrimordialPulse(blockNumber):
-		// Set the chainId to Pulsechain
-		signer = NewEIP155Signer(config.ChainID)
+		signer = NewLondonSigner(chainID)
 	case config.IsLondon(blockNumber):
 		signer = NewLondonSigner(config.ChainID)
 	case config.IsBerlin(blockNumber):
