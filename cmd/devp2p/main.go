@@ -35,7 +35,7 @@ var (
 	app       = &cli.App{
 		Name:        filepath.Base(os.Args[0]),
 		Usage:       "go-ethereum devp2p tool",
-		Version:     params.VersionWithCommit(gitCommit, gitDate),
+		Version:     fmt.Sprintf("%s/%s",params.VersionWithCommit(gitCommit, gitDate), params.Variant),
 		Writer:      os.Stdout,
 		HideVersion: true,
 	}
