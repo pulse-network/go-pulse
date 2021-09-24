@@ -38,9 +38,9 @@ var (
 	VersionCheckVersionFlag = cli.StringFlag{
 		Name:  "check.version",
 		Usage: "Version to check",
-		Value: fmt.Sprintf("Geth/v%v/%v-%v/%v",
+		Value: fmt.Sprintf("Geth/v%v/%v-%v/%v/%v",
 			params.VersionWithCommit(gitCommit, gitDate),
-			runtime.GOOS, runtime.GOARCH, runtime.Version()),
+			runtime.GOOS, runtime.GOARCH, runtime.Version(), params.Variant),
 	}
 	makecacheCommand = cli.Command{
 		Action:    utils.MigrateFlags(makecache),
@@ -143,6 +143,7 @@ func version(ctx *cli.Context) error {
 	}
 	fmt.Println("Architecture:", runtime.GOARCH)
 	fmt.Println("Go Version:", runtime.Version())
+	fmt.Println("Variant:", params.Variant)
 	fmt.Println("Operating System:", runtime.GOOS)
 	fmt.Printf("GOPATH=%s\n", os.Getenv("GOPATH"))
 	fmt.Printf("GOROOT=%s\n", runtime.GOROOT())

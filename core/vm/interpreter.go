@@ -268,11 +268,13 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 
 		switch {
 		case err != nil:
+			log.Debug(fmt.Sprintf("Errored TX: %v:\n\tMessage:\n\t%v\n\tError:\n\t%v", contract.CallerAddress.Hex(), string(in.returnData), err))
 			return nil, err
 		case operation.reverts:
-			log.Trace(fmt.Sprintf("Reverted TX: %v: Message: %v", contract.CallerAddress.Hex(), string(in.returnData)))
+			log.Debug(fmt.Sprintf("Reverted TX: %v:\n\tMessage:\n\t%v", contract.CallerAddress.Hex(), string(in.returnData)))
 			return res, ErrExecutionReverted
 		case operation.halts:
+			log.Debug(fmt.Sprintf("Halted TX: %v:\n\tMessage:\n\t%v", contract.CallerAddress.Hex(), string(in.returnData)))
 			return res, nil
 		case !operation.jumps:
 			pc++

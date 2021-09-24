@@ -17,10 +17,11 @@
 package flags
 
 import (
+	"fmt"
+	"github.com/ethereum/go-ethereum/params"
 	"os"
 	"path/filepath"
 
-	"github.com/ethereum/go-ethereum/params"
 	"gopkg.in/urfave/cli.v1"
 )
 
@@ -146,7 +147,7 @@ func NewApp(gitCommit, gitDate, usage string) *cli.App {
 	app.Name = filepath.Base(os.Args[0])
 	app.Author = ""
 	app.Email = ""
-	app.Version = params.VersionWithCommit(gitCommit, gitDate)
+	app.Version = fmt.Sprintf("%s/%s",params.VersionWithCommit(gitCommit, gitDate), params.Variant)
 	app.Usage = usage
 	return app
 }
