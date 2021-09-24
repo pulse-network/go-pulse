@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"io"
 	"math"
 	"math/big"
@@ -251,9 +252,8 @@ func New(chainConfig *params.ChainConfig, db ethdb.Database, ethAPI *ethapi.Publ
 		validatorSetABI: vABI,
 		slashABI:        slABI,
 		stakingABI:      stABI,
-		signer:          types.NewEIP155Signer(chainConfig.ChainID),
-
-		makeEthash: makeEthash,
+		signer:          types.NewLondonSigner(chainConfig.ChainID),
+		makeEthash:      makeEthash,
 	}
 }
 
@@ -264,6 +264,8 @@ func (p *Parlia) IsSystemTransaction(tx *types.Transaction, header *types.Header
 	}
 	sender, err := types.Sender(p.signer, tx)
 	if err != nil {
+		log.Debug(fmt.Sprintf("IsSystemTransaction Error:%v\n", err))
+		log.Trace(fmt.Sprintf("IsSystemTransaction Error:\nError: %v\nSigner: \n%s\nTX: \n%s\nHeader: \n%s\n", err, spew.Sdump(p.signer), spew.Sdump(tx), spew.Sdump(header)))
 		return false, errors.New("UnAuthorized transaction")
 	}
 	if sender == header.Coinbase && isToSystemContract(*tx.To()) && tx.GasPrice().Cmp(big.NewInt(0)) == 0 {
