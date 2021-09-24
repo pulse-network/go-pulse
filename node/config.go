@@ -63,6 +63,10 @@ type Config struct {
 	// in the devp2p node identifier.
 	Version string `toml:"-"`
 
+	// Variant should be set to the variant of the program. It is used
+	// in the devp2p node identifier.
+	Variant string `toml:"-"`
+
 	// DataDir is the file system folder the node should use for any data storage
 	// requirements. The configured data directory will not be directly shared with
 	// registered services, instead those can use utility methods to create/access
@@ -298,6 +302,10 @@ func (c *Config) NodeName() string {
 	}
 	name += "/" + runtime.GOOS + "-" + runtime.GOARCH
 	name += "/" + runtime.Version()
+	if c.Variant != "" {
+		name += "/" + c.Variant
+	}
+
 	return name
 }
 
