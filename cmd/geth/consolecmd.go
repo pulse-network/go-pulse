@@ -55,7 +55,7 @@ See https://geth.ethereum.org/docs/interface/javascript-console.`,
 The Geth console is an interactive shell for the JavaScript runtime environment
 which exposes a node admin interface as well as the Ðapp JavaScript API.
 See https://geth.ethereum.org/docs/interface/javascript-console.
-This command allows to open a console on a running geth node.`,
+This command allows to open a console on a running gpls node.`,
 	}
 
 	javascriptCommand = cli.Command{
@@ -113,7 +113,7 @@ func localConsole(ctx *cli.Context) error {
 // remoteConsole will connect to a remote geth instance, attaching a JavaScript
 // console to it.
 func remoteConsole(ctx *cli.Context) error {
-	// Attach to a remotely running geth instance and start the JavaScript console
+	// Attach to a remotely running gpls instance and start the JavaScript console
 	endpoint := ctx.Args().First()
 	if endpoint == "" {
 		path := node.DefaultDataDir()
