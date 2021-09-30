@@ -17,13 +17,13 @@ PulseChain brings all of the Ethereum state with it! As of block number _______ 
 
 Eventually the relative value of these assets will equalize though market action, but it is expected that there will be a discovery period with high volatility at launch of the network.
 
-### Proof of Staked Authority 
-Although Proof-of-Work (PoW) has been proven as a mechanism to implement a decentralized network, it is not practical for new or small networks and requires a large number of participants and computational waste to maintain the security. 
+### Proof of Staked Authority
+Although Proof-of-Work (PoW) has been proven as a mechanism to implement a decentralized network, it is not practical for new or small networks and requires a large number of participants and computational waste to maintain the security.
 
-Proof-of-Authority(PoA) provides defense against 51% attack, with improved efficiency and tolerance to certain levels of Byzantine players (malicious or hacked). 
+Proof-of-Authority(PoA) provides defense against 51% attack, with improved efficiency and tolerance to certain levels of Byzantine players (malicious or hacked).
 The PoA protocol however is most criticized for being not as decentralized as PoW, as the validators, i.e. the nodes that take turns to produce blocks, have all the authorities and are prone to corruption and security attacks.
 
-Other blockchains, such as EOS and Cosmos both, introduce different types of Deputy Proof of Stake (DPoS) to allow the token holders to vote and elect the validator set. It increases the decentralization and favors community governance. 
+Other blockchains, such as EOS and Cosmos both, introduce different types of Deputy Proof of Stake (DPoS) to allow the token holders to vote and elect the validator set. It increases the decentralization and favors community governance.
 
 PulseChain inherits and modifies the Binance Smart Chain consensus engine, Parlia, which combines DPoS and PoA. The PulseChain consensus engine has the following properties:
 
@@ -98,7 +98,7 @@ This command will:
    causing it to download more data in exchange for avoiding processing the entire history
    of the Binance Smart Chain network, which is very CPU intensive.
  * Start up `geth`'s built-in interactive [JavaScript console](https://geth.ethereum.org/docs/interface/javascript-console),
-   (via the trailing `console` subcommand) through which you can interact using [`web3` methods](https://web3js.readthedocs.io/en/) 
+   (via the trailing `console` subcommand) through which you can interact using [`web3` methods](https://web3js.readthedocs.io/en/)
    (note: the `web3` version bundled within `geth` is very old, and not up to date with official docs),
    as well as `geth`'s own [management APIs](https://geth.ethereum.org/docs/rpc/server).
    This tool is optional and if you leave it out you can always attach to an already running
@@ -178,7 +178,7 @@ from anyone on the internet, and are grateful for even the smallest of fixes!
 
 If you'd like to contribute to bsc, please fork, fix, commit and send a pull request
 for the maintainers to review and merge into the main code base. If you wish to submit
-more complex changes though, please check up with the core devs first on [our discord channel](https://discord.gg/5Z3C3SdxDw)
+more complex changes though, please check up with the core devs first on [our telegram channel](https://t.me/PulseDEV)
 to ensure those changes are in line with the general philosophy of the project and/or get
 some early feedback which can make both your efforts much lighter as well as our review
 and merge procedures quick and simple.
