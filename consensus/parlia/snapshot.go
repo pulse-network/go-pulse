@@ -181,7 +181,7 @@ func (s *Snapshot) apply(headers []*types.Header, chain consensus.ChainHeaderRea
 			return nil, err
 		}
 		if _, ok := snap.Validators[validator]; !ok {
-			return nil, errUnauthorizedValidator
+			return nil, &consensus.ErrUnauthorizedValidator{}
 		}
 		for _, recent := range snap.Recents {
 			if recent == validator {

@@ -126,9 +126,6 @@ var (
 	// insert an inconsistent block.
 	errBlockHashInconsistent = errors.New("the block hash is inconsistent")
 
-	// errUnauthorizedValidator is returned if a header is signed by a non-authorized entity.
-	errUnauthorizedValidator = errors.New("unauthorized validator")
-
 	// errCoinBaseMisMatch is returned if a header's coinbase do not match with signature
 	errCoinBaseMisMatch = errors.New("coinbase do not match with signature")
 
@@ -642,7 +639,7 @@ func (p *Parlia) verifySeal(chain consensus.ChainHeaderReader, header *types.Hea
 	}
 
 	if _, ok := snap.Validators[signer]; !ok {
-		return errUnauthorizedValidator
+		return &consensus.ErrUnauthorizedValidator{}
 	}
 
 	for seen, recent := range snap.Recents {
@@ -673,7 +670,7 @@ func (p *Parlia) verifySeal(chain consensus.ChainHeaderReader, header *types.Hea
 func (p *Parlia) Prepare(chain consensus.ChainHeaderReader, header *types.Header) error {
 	// Bail out early if the Authorize() method for block mining has not been called
 	if p.signTxFn == nil {
-		return errUnauthorizedValidator
+		return &consensus.ErrUnauthorizedValidator{}
 	}
 
 	header.Coinbase = p.val
@@ -936,7 +933,7 @@ func (p *Parlia) Seal(chain consensus.ChainHeaderReader, block *types.Block, res
 
 	// Bail out if we're unauthorized to sign a block
 	if _, authorized := snap.Validators[val]; !authorized {
-		return errUnauthorizedValidator
+		return &consensus.ErrUnauthorizedValidator{}
 	}
 
 	// If we're amongst the recent signers, wait for the next block
