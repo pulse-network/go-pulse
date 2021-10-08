@@ -141,3 +141,11 @@ type PoSA interface {
 	IsSystemContract(to *common.Address) bool
 	EnoughDistance(chain ChainReader, header *types.Header) bool
 }
+
+// ErrUnauthorizedValidator is returned if a header is signed by a non-authorized entity,
+// or if prepairing a block without unlocking a miner.etherbase address.
+type ErrUnauthorizedValidator struct{}
+
+func (e *ErrUnauthorizedValidator) Error() string {
+	return "unauthorized validator"
+}
