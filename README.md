@@ -58,6 +58,34 @@ or, to build the full suite of utilities:
 make all
 ```
 
+### Building docker images
+
+Multiple Dockerfiles are provided for different build strategies:
+- [Dockerfile](Dockerfile): The minimal build, including only the `geth` command.
+- [Dockerfile.alltools](Dockerfile.alltools): An image containing the full suite of utilities generated from `make all`.
+- [Dockerfile.debug](Dockerfile.debug): A debug build including the `dlv` command for running a [Delve](https://github.com/go-delve/delve) server that enables remote debugging.
+
+The [Makefile](Makefile) provides convenient targets for building and tagging docker builds. These make targets accept an optional `TAG` var, which should be set to a semantic version number when possible.
+
+```sh
+# build the minimal image inclduing only geth
+make docker # => produces docker image "registry.gitlab.com/pulsechaincom/go-pulse:latest"
+make TAG=0.0.0 docker # => produces docker image "registry.gitlab.com/pulsechaincom/go-pulse:0.0.0"
+
+# build the alltools image with extra utilities
+make docker-alltools # => produces docker image "registry.gitlab.com/pulsechaincom/go-pulse:alltools"
+make TAG=0.0.0 docker-alltools # => produces docker image "registry.gitlab.com/pulsechaincom/go-pulse:0.0.0-alltools"
+
+# build the debug image include dlv server
+make docker-debug # => produces docker image "registry.gitlab.com/pulsechaincom/go-pulse:debug"
+make TAG=0.0.0 docker-debug # => produces docker image "registry.gitlab.com/pulsechaincom/go-pulse:0.0.0-debug"
+```
+
+or, to build all 3 docker images:
+```sh
+make TAG=0.0.0 docker-all
+```
+
 ## Executables
 
 The PulseChain project comes with several wrappers/executables found in the `cmd`
