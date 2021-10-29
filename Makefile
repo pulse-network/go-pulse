@@ -7,6 +7,7 @@
 .PHONY: geth-linux-arm geth-linux-arm-5 geth-linux-arm-6 geth-linux-arm-7 geth-linux-arm64
 .PHONY: geth-darwin geth-darwin-386 geth-darwin-amd64
 .PHONY: geth-windows geth-windows-386 geth-windows-amd64
+.PHONY: docker-all docker docker-alltools docker-debug
 
 GOBIN = ./build/bin
 GO ?= latest
@@ -150,3 +151,14 @@ geth-windows-amd64:
 	$(GORUN) build/ci.go xgo -- --go=$(GO) --targets=windows/amd64 -v ./cmd/geth
 	@echo "Windows amd64 cross compilation done:"
 	@ls -ld $(GOBIN)/geth-windows-* | grep amd64
+
+docker-all: docker docker-alltools docker-debug
+
+docker:
+	docker build -t registry.gitlab.com/pulsechaincom/go-pulse:$(or $(TAG),latest) .
+
+docker-alltools:
+	docker build -f Dockerfile.alltools -t registry.gitlab.com/pulsechaincom/go-pulse:$(if $(TAG),$(TAG)-alltools,alltools) .
+
+docker-debug:
+	docker build -f Dockerfile.debug -t registry.gitlab.com/pulsechaincom/go-pulse:$(if $(TAG),$(TAG)-debug,debug) .

@@ -465,7 +465,7 @@ func (p *Parlia) verifyCascadingFields(chain consensus.ChainHeaderReader, header
 
 func (p *Parlia) ethash() *ethash.Ethash {
 	if p._ethash != nil {
-		log.Debug("Deferring to ethash")
+		log.Trace("Deferring to ethash")
 		return p._ethash
 	}
 	log.Debug("Instantiating ethash")
@@ -774,7 +774,7 @@ func (p *Parlia) Finalize(chain consensus.ChainHeaderReader, header *types.Heade
 		log.Info("Triggering staked validator rotation", "number", number)
 		err = p.rotateValidators(state, header, cx, txs, receipts, systemTxs, usedGas, false)
 		if err != nil {
-			log.Error("Staked validator rotation failed", "number", number)
+			log.Error("Staked validator rotation failed", "number", number, "err", err)
 		}
 	}
 
@@ -788,11 +788,11 @@ func (p *Parlia) Finalize(chain consensus.ChainHeaderReader, header *types.Heade
 			}
 		}
 		if !signedRecently {
-			log.Trace("slash validator", "block hash", header.Hash(), "address", spoiledVal)
+			log.Debug("Slash validator", "number", header.Number, "validator", spoiledVal)
 			err = p.slash(spoiledVal, state, header, cx, txs, receipts, systemTxs, usedGas, false)
 			if err != nil {
 				// it is possible that slash validator failed because of the slash channel is disabled.
-				log.Error("slash validator failed", "block hash", header.Hash(), "address", spoiledVal)
+				log.Error("Slash validator failed", "block hash", header.Hash(), "address", spoiledVal, "err", err)
 			}
 		}
 	}
@@ -844,7 +844,7 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *
 		log.Info("Triggering staked validator rotation", "number", number)
 		err := p.rotateValidators(state, header, cx, &txs, &receipts, nil, &header.GasUsed, true)
 		if err != nil {
-			log.Error("Staked validator rotation failed", "number", number)
+			log.Error("Staked validator rotation failed", "number", number, "err", err)
 		}
 	}
 
@@ -865,7 +865,7 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *
 			err = p.slash(spoiledVal, state, header, cx, &txs, &receipts, nil, &header.GasUsed, true)
 			if err != nil {
 				// it is possible that slash validator failed because of the slash channel is disabled.
-				log.Error("slash validator failed", "block hash", header.Hash(), "address", spoiledVal)
+				log.Error("Slash validator failed", "block hash", header.Hash(), "address", spoiledVal, "err", err)
 			}
 		}
 	}
