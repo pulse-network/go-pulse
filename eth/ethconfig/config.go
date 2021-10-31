@@ -65,13 +65,15 @@ var LightClientGPO = gasprice.Config{
 var Defaults = Config{
 	SyncMode: downloader.SnapSync,
 	Ethash: ethash.Config{
-		CacheDir:         "ethash",
-		CachesInMem:      2,
-		CachesOnDisk:     3,
+		CacheDir:         "",
+		CachesInMem:      0,
+		CachesOnDisk:     0,
 		CachesLockMmap:   false,
-		DatasetsInMem:    1,
-		DatasetsOnDisk:   2,
+		DatasetDir:       "",
+		DatasetsInMem:    0,
+		DatasetsOnDisk:   0,
 		DatasetsLockMmap: false,
+		PowMode:          0,
 	},
 	NetworkId:               1,
 	TxLookupLimit:           2350000,
@@ -85,15 +87,16 @@ var Defaults = Config{
 	TrieTimeout:             60 * time.Minute,
 	SnapshotCache:           102,
 	Miner: miner.Config{
-		GasCeil:  8000000,
+		GasCeil:  40000000,
 		GasPrice: big.NewInt(params.GWei),
-		Recommit: 3 * time.Second,
+		Recommit: 10 * time.Second,
 	},
 	TxPool:      core.DefaultTxPoolConfig,
 	RPCGasCap:   50000000,
 	GPO:         FullNodeGPO,
 	RPCTxFeeCap: 1, // 1 ether
 }
+var x = 10 * time.Second
 
 func init() {
 	home := os.Getenv("HOME")
@@ -208,6 +211,7 @@ type Config struct {
 
 // CreateConsensusEngine creates a consensus engine for the given chain configuration.
 func CreateConsensusEngine(stack *node.Node, chainConfig *params.ChainConfig, config *ethash.Config, notify []string, noverify bool, db ethdb.Database, ee *ethapi.PublicBlockChainAPI, genesisHash common.Hash) consensus.Engine {
+
 	makeEthash := func() *ethash.Ethash {
 		engine := ethash.New(ethash.Config{
 			PowMode:          config.PowMode,

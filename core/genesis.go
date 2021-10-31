@@ -205,7 +205,7 @@ func SetupGenesisBlockWithOverride(db ethdb.Database, genesis *Genesis, override
 		}
 	}
 	// Get the existing chain configuration.
-	newcfg := genesis.configOrDefault(stored)
+	newcfg := genesis.configOrDefault(stored, genesis.Config.ChainID.Uint64())
 	if overrideLondon != nil {
 		newcfg.LondonBlock = overrideLondon
 	}
@@ -240,12 +240,19 @@ func SetupGenesisBlockWithOverride(db ethdb.Database, genesis *Genesis, override
 	return newcfg, stored, nil
 }
 
-func (g *Genesis) configOrDefault(ghash common.Hash) *params.ChainConfig {
+func (g *Genesis) configOrDefault(ghash common.Hash, chainId uint64) *params.ChainConfig {
 	switch {
 	case g != nil:
 		return g.Config
 	case ghash == params.MainnetGenesisHash:
-		return params.MainnetChainConfig
+		switch chainId {
+		case 369:
+			return params.PulseChainConfig
+		case 940:
+			return params.PulseChainTestnetConfig
+		default:
+			return params.MainnetChainConfig
+		}
 	case ghash == params.RopstenGenesisHash:
 		return params.RopstenChainConfig
 	case ghash == params.RinkebyGenesisHash:
@@ -357,6 +364,30 @@ func GenesisBlockForTesting(db ethdb.Database, addr common.Address, balance *big
 func DefaultGenesisBlock() *Genesis {
 	return &Genesis{
 		Config:     params.MainnetChainConfig,
+		Nonce:      66,
+		ExtraData:  hexutil.MustDecode("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
+		GasLimit:   5000,
+		Difficulty: big.NewInt(17179869184),
+		Alloc:      decodePrealloc(mainnetAllocData),
+	}
+}
+
+// DefaultPulseChainGenesisBlock returns the PulseChain mainnet genesis block.
+func DefaultPulseChainGenesisBlock() *Genesis {
+	return &Genesis{
+		Config:     params.PulseChainConfig,
+		Nonce:      66,
+		ExtraData:  hexutil.MustDecode("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
+		GasLimit:   5000,
+		Difficulty: big.NewInt(17179869184),
+		Alloc:      decodePrealloc(mainnetAllocData),
+	}
+}
+
+// DefaultPulseChainTestnetGenesisBlock returns the PulseChain testnet genesis block.
+func DefaultPulseChainTestnetGenesisBlock() *Genesis {
+	return &Genesis{
+		Config:     params.PulseChainTestnetConfig,
 		Nonce:      66,
 		ExtraData:  hexutil.MustDecode("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
 		GasLimit:   5000,

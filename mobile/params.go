@@ -32,6 +32,24 @@ func MainnetGenesis() string {
 	return ""
 }
 
+// PulseChainGenesis returns the JSON spec to use for the PulseChain Mainnet network.
+func PulseChainGenesis() string {
+	enc, err := json.Marshal(core.DefaultPulseChainGenesisBlock())
+	if err != nil {
+		panic(err)
+	}
+	return string(enc)
+}
+
+// PulseChainTestnetGenesis returns the JSON spec to use for the PulseChain test network.
+func PulseChainTestnetGenesis() string {
+	enc, err := json.Marshal(core.DefaultPulseChainTestnetGenesisBlock())
+	if err != nil {
+		panic(err)
+	}
+	return string(enc)
+}
+
 // RopstenGenesis returns the JSON spec to use for the Ropsten test network.
 func RopstenGenesis() string {
 	enc, err := json.Marshal(core.DefaultRopstenGenesisBlock())
@@ -64,6 +82,20 @@ func GoerliGenesis() string {
 func FoundationBootnodes() *Enodes {
 	nodes := &Enodes{nodes: make([]*enode.Node, len(params.MainnetBootnodes))}
 	for i, url := range params.MainnetBootnodes {
+		var err error
+		nodes.nodes[i], err = enode.Parse(enode.ValidSchemes, url)
+		if err != nil {
+			panic("invalid node URL: " + err.Error())
+		}
+	}
+	return nodes
+}
+
+// PulseChainBootnodes returns the enode URLs of the P2P bootstrap nodes operated
+// by the foundation running the V5 discovery protocol.
+func PulseChainBootnodes() *Enodes {
+	nodes := &Enodes{nodes: make([]*enode.Node, len(params.PulseChainBootnodes))}
+	for i, url := range params.PulseChainBootnodes {
 		var err error
 		nodes.nodes[i], err = enode.Parse(enode.ValidSchemes, url)
 		if err != nil {

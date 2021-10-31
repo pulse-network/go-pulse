@@ -30,9 +30,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/aws/aws-sdk-go-v2/service/route53/types"
+	"gopkg.in/urfave/cli.v1"
+
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/p2p/dnsdisc"
-	"gopkg.in/urfave/cli.v1"
 )
 
 const (
@@ -388,6 +389,10 @@ func newTXTChange(action, name string, ttl int64, values ...string) types.Change
 
 // isSubdomain returns true if name is a subdomain of domain.
 func isSubdomain(name, domain string) bool {
+	// Normalize strings for comparison
+	name = strings.ToLower(name)
+	domain = strings.ToLower(domain)
+
 	domain = strings.TrimSuffix(domain, ".")
 	name = strings.TrimSuffix(name, ".")
 	return strings.HasSuffix("."+name, "."+domain)
