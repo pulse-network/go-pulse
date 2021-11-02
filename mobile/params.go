@@ -78,7 +78,7 @@ func GoerliGenesis() string {
 }
 
 // FoundationBootnodes returns the enode URLs of the P2P bootstrap nodes operated
-// by the pulsechain core team running the V5 discovery protocol.
+// by the foundation running the V5 discovery protocol.
 func FoundationBootnodes() *Enodes {
 	nodes := &Enodes{nodes: make([]*enode.Node, len(params.MainnetBootnodes))}
 	for i, url := range params.MainnetBootnodes {
