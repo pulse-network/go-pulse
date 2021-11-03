@@ -96,7 +96,6 @@ var Defaults = Config{
 	GPO:         FullNodeGPO,
 	RPCTxFeeCap: 1, // 1 ether
 }
-var x = 10 * time.Second
 
 func init() {
 	home := os.Getenv("HOME")
