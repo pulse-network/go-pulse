@@ -81,10 +81,8 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB, cfg
 	// Iterate over and process the individual transactions
 	posa, isPoSA := p.engine.(consensus.PoSA)
 
-	// Store common transactions
 	commonTxs := make([]*types.Transaction, 0, len(block.Transactions()))
 
-	// Store system transactions
 	// usually do have two tx, one for validator set contract, another for system reward contract.
 	systemTxs := make([]*types.Transaction, 0, 2)
 
