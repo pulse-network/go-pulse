@@ -80,11 +80,15 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB, cfg
 	vmenv := vm.NewEVM(blockContext, vm.TxContext{}, statedb, p.config, cfg)
 	// Iterate over and process the individual transactions
 	posa, isPoSA := p.engine.(consensus.PoSA)
+
 	commonTxs := make([]*types.Transaction, 0, len(block.Transactions()))
+
 	// usually do have two tx, one for validator set contract, another for system reward contract.
 	systemTxs := make([]*types.Transaction, 0, 2)
+
 	for i, tx := range block.Transactions() {
 		if isPoSA {
+			// Check if system transaction and store and skip apply
 			if isSystemTx, err := posa.IsSystemTransaction(tx, block.Header()); err != nil {
 				return nil, nil, 0, err
 			} else if isSystemTx {

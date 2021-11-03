@@ -32,6 +32,18 @@ var MainnetBootnodes = []string{
 	"enode://5d6d7cd20d6da4bb83a1d28cadb5d409b64edf314c0335df658c1a54e32c7c4a7ab7823d57c39b6a757556e68ff1df17c748b698544a55cb488b52479a92b60f@104.42.217.25:30303",   // bootnode-azure-westus-001
 }
 
+// PulseChainBootnodes are the enode URLs of the P2P bootstrap nodes running on
+// the main PulseChain network.
+var PulseChainBootnodes []string
+
+// PulseChainTestnetBootnodes are the enode URLs of the P2P bootstrap nodes running on
+// the main PulseChain network.
+var PulseChainTestnetBootnodes = []string{
+	"enode://71cdae146d6cde7ebd8d24a8b258814870e0b70973d9f12132ff788df4d4b3f759e07bfd562442ba6179446bea70db9668eb4cc361d1839dec5863712a26bfc4@3.80.7.29:30401",      // bootnode-aws-us-east-1-001
+	"enode://fc2a3c3212fe8a105f6215c105cf95e228bd0c8eed3316aadde2deb8894ffa227eab8c8db6347604a30233ca8cf1be11a1aaf0f92780cb9f1336212f6c1d7f13@3.84.236.46:30401",    // bootnode-aws-us-east-1-002
+	"enode://379b358bea1fd0419ef3a1476011d146554b261b3114ae8a1d93b32673e79b7b4aa51f9252ef2f2f6021066e359efffb5356e6c08355c3e666d3e19104b87086@34.229.154.166:30401", // bootnode-aws-us-east-1-003
+}
+
 // RopstenBootnodes are the enode URLs of the P2P bootstrap nodes running on the
 // Ropsten test network.
 var RopstenBootnodes = []string{
@@ -85,16 +97,29 @@ var V5Bootnodes = []string{
 	"enr:-Ku4QEWzdnVtXc2Q0ZVigfCGggOVB2Vc1ZCPEc6j21NIFLODSJbvNaef1g4PxhPwl_3kax86YPheFUSLXPRs98vvYsoBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhDZBrP2Jc2VjcDI1NmsxoQM6jr8Rb1ktLEsVcKAPa08wCsKUmvoQ8khiOl_SLozf9IN1ZHCCIyg",
 }
 
-const dnsPrefix = "enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@"
-
 // KnownDNSNetwork returns the address of a public DNS-based node list for the given
 // genesis hash and protocol. See https://github.com/ethereum/discv4-dns-lists for more
 // information.
-func KnownDNSNetwork(genesis common.Hash, protocol string) string {
+func KnownDNSNetwork(genesis common.Hash, networkID uint64, protocol string) string {
 	var net string
+	var dnsPrefix = "enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@"
+	var tld = ".ethdisco.net"
+
+	if networkID == 369 || networkID == 940 {
+		tld = ".pulsedisco.net"
+		dnsPrefix = "enrtree://APFXO36RU3TWV7XFGWI2TYF5IDA3WM2GPTRL3TCZINWHZX4R6TAOK@"
+	}
+
 	switch genesis {
 	case MainnetGenesisHash:
-		net = "mainnet"
+		switch networkID {
+		case 369:
+			net = "PulseChain"
+		case 940:
+			net = "PulseChainTestnet"
+		default:
+			net = "mainnet"
+		}
 	case RopstenGenesisHash:
 		net = "ropsten"
 	case RinkebyGenesisHash:
@@ -104,5 +129,5 @@ func KnownDNSNetwork(genesis common.Hash, protocol string) string {
 	default:
 		return ""
 	}
-	return dnsPrefix + protocol + "." + net + ".ethdisco.net"
+	return dnsPrefix + protocol + "." + net + tld
 }
