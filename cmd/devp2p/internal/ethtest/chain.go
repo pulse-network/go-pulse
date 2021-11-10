@@ -26,11 +26,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/core/forkid"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/rlp"
+	"gitlab.com/pulsechaincom/go-pulse/core"
+	"gitlab.com/pulsechaincom/go-pulse/core/forkid"
+	"gitlab.com/pulsechaincom/go-pulse/core/types"
+	"gitlab.com/pulsechaincom/go-pulse/params"
+	"gitlab.com/pulsechaincom/go-pulse/rlp"
 )
 
 type Chain struct {

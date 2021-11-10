@@ -23,8 +23,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
+	"gitlab.com/pulsechaincom/go-pulse/common"
+	"gitlab.com/pulsechaincom/go-pulse/core/types"
 )
 
 func TestChainIterator(t *testing.T) {

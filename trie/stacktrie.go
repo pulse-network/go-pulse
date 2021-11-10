@@ -25,10 +25,10 @@ import (
 	"io"
 	"sync"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethdb"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/rlp"
+	"gitlab.com/pulsechaincom/go-pulse/common"
+	"gitlab.com/pulsechaincom/go-pulse/ethdb"
+	"gitlab.com/pulsechaincom/go-pulse/log"
+	"gitlab.com/pulsechaincom/go-pulse/rlp"
 )
 
 var ErrCommitDisabled = errors.New("no database for committing")

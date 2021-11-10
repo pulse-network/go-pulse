@@ -24,7 +24,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ethereum/go-ethereum/log"
+	"gitlab.com/pulsechaincom/go-pulse/log"
 )
 
 // measurementImpact is the impact a single measurement has on a peer's final

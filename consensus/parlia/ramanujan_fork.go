@@ -3,8 +3,8 @@ package parlia
 import (
 	"time"
 
-	"github.com/ethereum/go-ethereum/consensus"
-	"github.com/ethereum/go-ethereum/core/types"
+	"gitlab.com/pulsechaincom/go-pulse/consensus"
+	"gitlab.com/pulsechaincom/go-pulse/core/types"
 )
 
 const (

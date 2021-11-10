@@ -21,8 +21,8 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
+	"gitlab.com/pulsechaincom/go-pulse/core/types"
+	"gitlab.com/pulsechaincom/go-pulse/crypto"
 )
 
 // Tests that transactions can be added to strict lists and list contents and

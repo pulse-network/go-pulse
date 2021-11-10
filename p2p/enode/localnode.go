@@ -26,9 +26,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/p2p/enr"
-	"github.com/ethereum/go-ethereum/p2p/netutil"
+	"gitlab.com/pulsechaincom/go-pulse/log"
+	"gitlab.com/pulsechaincom/go-pulse/p2p/enr"
+	"gitlab.com/pulsechaincom/go-pulse/p2p/netutil"
 )
 
 const (

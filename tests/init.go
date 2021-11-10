@@ -21,7 +21,7 @@ import (
 	"math/big"
 	"sort"
 
-	"github.com/ethereum/go-ethereum/params"
+	"gitlab.com/pulsechaincom/go-pulse/params"
 )
 
 // Forks table defines supported forks and their chain config.

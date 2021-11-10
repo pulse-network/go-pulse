@@ -30,16 +30,16 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/ethereum/go-ethereum/accounts"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/consensus/clique"
-	"github.com/ethereum/go-ethereum/consensus/parlia"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/ethereum/go-ethereum/signer/core/apitypes"
+	"gitlab.com/pulsechaincom/go-pulse/accounts"
+	"gitlab.com/pulsechaincom/go-pulse/common"
+	"gitlab.com/pulsechaincom/go-pulse/common/hexutil"
+	"gitlab.com/pulsechaincom/go-pulse/common/math"
+	"gitlab.com/pulsechaincom/go-pulse/consensus/clique"
+	"gitlab.com/pulsechaincom/go-pulse/consensus/parlia"
+	"gitlab.com/pulsechaincom/go-pulse/core/types"
+	"gitlab.com/pulsechaincom/go-pulse/crypto"
+	"gitlab.com/pulsechaincom/go-pulse/rlp"
+	"gitlab.com/pulsechaincom/go-pulse/signer/core/apitypes"
 )
 
 type SigFormat struct {

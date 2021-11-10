@@ -24,9 +24,9 @@ import (
 
 	"gopkg.in/urfave/cli.v1"
 
-	"github.com/ethereum/go-ethereum/cmd/utils"
-	"github.com/ethereum/go-ethereum/internal/debug"
-	"github.com/ethereum/go-ethereum/internal/flags"
+	"gitlab.com/pulsechaincom/go-pulse/cmd/utils"
+	"gitlab.com/pulsechaincom/go-pulse/internal/debug"
+	"gitlab.com/pulsechaincom/go-pulse/internal/flags"
 )
 
 // AppHelpFlagGroups is the application flags, grouped by functionality.

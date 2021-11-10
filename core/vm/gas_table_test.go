@@ -21,11 +21,11 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/core/state"
-	"github.com/ethereum/go-ethereum/params"
+	"gitlab.com/pulsechaincom/go-pulse/common"
+	"gitlab.com/pulsechaincom/go-pulse/common/hexutil"
+	"gitlab.com/pulsechaincom/go-pulse/core/rawdb"
+	"gitlab.com/pulsechaincom/go-pulse/core/state"
+	"gitlab.com/pulsechaincom/go-pulse/params"
 )
 
 func TestMemoryGasCost(t *testing.T) {

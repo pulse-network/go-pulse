@@ -22,11 +22,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common/mclock"
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/p2p/enode"
-	"github.com/ethereum/go-ethereum/p2p/enr"
-	"github.com/ethereum/go-ethereum/p2p/nodestate"
+	"gitlab.com/pulsechaincom/go-pulse/common/mclock"
+	"gitlab.com/pulsechaincom/go-pulse/core/rawdb"
+	"gitlab.com/pulsechaincom/go-pulse/p2p/enode"
+	"gitlab.com/pulsechaincom/go-pulse/p2p/enr"
+	"gitlab.com/pulsechaincom/go-pulse/p2p/nodestate"
 )
 
 const defaultConnectedBias = time.Minute * 3

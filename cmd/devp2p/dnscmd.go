@@ -27,11 +27,11 @@ import (
 
 	"gopkg.in/urfave/cli.v1"
 
-	"github.com/ethereum/go-ethereum/accounts/keystore"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/console/prompt"
-	"github.com/ethereum/go-ethereum/p2p/dnsdisc"
-	"github.com/ethereum/go-ethereum/p2p/enode"
+	"gitlab.com/pulsechaincom/go-pulse/accounts/keystore"
+	"gitlab.com/pulsechaincom/go-pulse/common"
+	"gitlab.com/pulsechaincom/go-pulse/console/prompt"
+	"gitlab.com/pulsechaincom/go-pulse/p2p/dnsdisc"
+	"gitlab.com/pulsechaincom/go-pulse/p2p/enode"
 )
 
 var (

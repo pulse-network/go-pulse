@@ -21,11 +21,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/core/state"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/ethereum/go-ethereum/light"
+	"gitlab.com/pulsechaincom/go-pulse/core"
+	"gitlab.com/pulsechaincom/go-pulse/core/state"
+	"gitlab.com/pulsechaincom/go-pulse/core/types"
+	"gitlab.com/pulsechaincom/go-pulse/core/vm"
+	"gitlab.com/pulsechaincom/go-pulse/light"
 )
 
 // stateAtBlock retrieves the state database associated with a certain block.

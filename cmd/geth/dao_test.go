@@ -23,9 +23,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/params"
+	"gitlab.com/pulsechaincom/go-pulse/common"
+	"gitlab.com/pulsechaincom/go-pulse/core/rawdb"
+	"gitlab.com/pulsechaincom/go-pulse/params"
 )
 
 // Genesis block for nodes which don't care about the DAO fork (i.e. not configured)

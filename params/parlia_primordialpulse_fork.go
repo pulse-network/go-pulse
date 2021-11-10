@@ -1,6 +1,6 @@
 package params
 
-import "github.com/ethereum/go-ethereum/common/math"
+import "gitlab.com/pulsechaincom/go-pulse/common/math"
 
 var pulseChainTestnetTreasury Treasury
 

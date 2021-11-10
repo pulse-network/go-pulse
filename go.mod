@@ -1,4 +1,4 @@
-module github.com/ethereum/go-ethereum
+module gitlab.com/pulsechaincom/go-pulse
 
 go 1.15
 

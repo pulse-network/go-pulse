@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/accounts/keystore"
-	"github.com/ethereum/go-ethereum/log"
+	"gitlab.com/pulsechaincom/go-pulse/accounts/keystore"
+	"gitlab.com/pulsechaincom/go-pulse/log"
 )
 
 // deployFaucet queries the user for various input on deploying a faucet, after

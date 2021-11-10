@@ -27,7 +27,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common/math"
+	"gitlab.com/pulsechaincom/go-pulse/common/math"
 )
 
 func TestStreamKind(t *testing.T) {

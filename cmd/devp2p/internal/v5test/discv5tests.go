@@ -22,10 +22,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ethereum/go-ethereum/internal/utesting"
-	"github.com/ethereum/go-ethereum/p2p/discover/v5wire"
-	"github.com/ethereum/go-ethereum/p2p/enode"
-	"github.com/ethereum/go-ethereum/p2p/netutil"
+	"gitlab.com/pulsechaincom/go-pulse/internal/utesting"
+	"gitlab.com/pulsechaincom/go-pulse/p2p/discover/v5wire"
+	"gitlab.com/pulsechaincom/go-pulse/p2p/enode"
+	"gitlab.com/pulsechaincom/go-pulse/p2p/netutil"
 )
 
 // Suite is the discv5 test suite.

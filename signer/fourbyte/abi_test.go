@@ -22,8 +22,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
+	"gitlab.com/pulsechaincom/go-pulse/accounts/abi"
+	"gitlab.com/pulsechaincom/go-pulse/common"
 )
 
 func verify(t *testing.T, jsondata, calldata string, exp []interface{}) {

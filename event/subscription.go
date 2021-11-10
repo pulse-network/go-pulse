@@ -21,7 +21,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common/mclock"
+	"gitlab.com/pulsechaincom/go-pulse/common/mclock"
 )
 
 // Subscription represents a stream of events. The carrier of the events is typically a

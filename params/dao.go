@@ -19,7 +19,7 @@ package params
 import (
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common"
+	"gitlab.com/pulsechaincom/go-pulse/common"
 )
 
 // DAOForkBlockExtra is the block header extra-data field to set for the DAO fork

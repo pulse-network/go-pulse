@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
+	"gitlab.com/pulsechaincom/go-pulse/common"
 )
 
 func TestImpactOfValidatorOutOfService(t *testing.T) {

@@ -19,8 +19,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/cmd/utils"
-	"github.com/ethereum/go-ethereum/common"
+	"gitlab.com/pulsechaincom/go-pulse/cmd/utils"
+	"gitlab.com/pulsechaincom/go-pulse/common"
 	"gopkg.in/urfave/cli.v1"
 )
 

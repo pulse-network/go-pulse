@@ -19,7 +19,7 @@ package keystore
 import (
 	"os"
 
-	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"gitlab.com/pulsechaincom/go-pulse/accounts/keystore"
 )
 
 func Fuzz(input []byte) int {
