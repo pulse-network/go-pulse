@@ -197,21 +197,28 @@ func SetupGenesisBlockWithOverride(db ethdb.Database, genesis *Genesis, override
 		}
 		return genesis.Config, block.Hash(), nil
 	}
-	// Check whether the genesis block is already written.
+	// NOTE: The `genesis` argument will be one of:
+	// - nil: if running the without the `init` command and without providing a network flag (--pulsechain, --ropsten, etc..)
+	// - defaulted: when a network flag is provided (--pulsechain, --ropsten, etc..), genesis will hold the defaults
+	// - custom: if running with the `init` command supplying a custom genesis.json file, genesis will hold the file contents
+	chainId := params.MainnetChainConfig.ChainID.Uint64()
 	if genesis != nil {
+		chainId = genesis.Config.ChainID.Uint64()
 		hash := genesis.ToBlock(nil).Hash()
+		// Verify hash if the genesis block is already written
 		if hash != stored {
 			return genesis.Config, hash, &GenesisMismatchError{stored, hash}
 		}
 	}
-	// Get the existing chain configuration.
-	newcfg := genesis.configOrDefault(stored, genesis.Config.ChainID.Uint64())
+	// Build new chain configuration
+	newcfg := genesis.configOrDefault(stored, chainId)
 	if overrideLondon != nil {
 		newcfg.LondonBlock = overrideLondon
 	}
 	if err := newcfg.CheckConfigForkOrder(); err != nil {
 		return newcfg, common.Hash{}, err
 	}
+	// Load the existing chain configuration
 	storedcfg := rawdb.ReadChainConfig(db, stored)
 	if storedcfg == nil {
 		log.Warn("Found genesis block without chain config")

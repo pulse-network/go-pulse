@@ -762,9 +762,7 @@ func (p *Parlia) Finalize(chain consensus.ChainHeaderReader, header *types.Heade
 
 		if p.chainConfig.IsPrimordialPulseBlock(number) {
 			// handle initial allocations for the primordialPulse fork
-			if err := p.primordialPulseAlloctions(state); err != nil {
-				panic(err)
-			}
+			p.primordialPulseAlloctions(state)
 		}
 	}
 
@@ -832,9 +830,7 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *
 
 		if p.chainConfig.IsPrimordialPulseBlock(number) {
 			// handle initial allocations for the primordialPulse fork
-			if err := p.primordialPulseAlloctions(state); err != nil {
-				panic(err)
-			}
+			p.primordialPulseAlloctions(state)
 		}
 	}
 
