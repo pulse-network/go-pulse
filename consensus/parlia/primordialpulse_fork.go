@@ -1,6 +1,7 @@
 package parlia
 
 import (
+	_ "embed"
 	"errors"
 	"math/big"
 	"sort"
@@ -10,6 +11,10 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
 )
+
+// see https://gitlab.com/pulsechaincom/compressed-allocations
+//go:embed primordialpulse_credits.bin
+var rawCredits []byte
 
 // Fetches the initial validators from the parlia config for bootstrapping the
 // authorization snapshot on a new PulseChain fork.
@@ -56,13 +61,22 @@ func (p *Parlia) getEpochValidatorBytes(header *types.Header, snap *Snapshot) ([
 }
 
 // Performs the initial allocations and balance adjustments for the PrimordialPulse fork.
-func (p *Parlia) primordialPulseAlloctions(state *state.StateDB) error {
+func (p *Parlia) primordialPulseAlloctions(state *state.StateDB) {
 	if p.config.Treasury != nil {
 		log.Info("Applying PrimordialPulse treasury allocation 💸")
-		state.SetBalance(common.HexToAddress(p.config.Treasury.Addr), (*big.Int)(p.config.Treasury.Balance))
-	} else {
-		log.Info("Skipping PrimordialPulse treasury allocation (no config)")
+		state.AddBalance(common.HexToAddress(p.config.Treasury.Addr), (*big.Int)(p.config.Treasury.Balance))
 	}
 
-	return nil
+	log.Info("Awarding PrimordialPulse sacrifice credits 💸")
+	for ptr := 0; ptr < len(rawCredits); {
+		byteCount := int(rawCredits[ptr])
+		ptr++
+
+		record := rawCredits[ptr : ptr+byteCount]
+		ptr += byteCount
+
+		addr := common.BytesToAddress(record[:20])
+		credit := new(big.Int).SetBytes(record[20:])
+		state.AddBalance(addr, credit)
+	}
 }
