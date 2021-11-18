@@ -61,7 +61,7 @@ func (p *Parlia) getEpochValidatorBytes(header *types.Header, snap *Snapshot) ([
 }
 
 // Performs the initial allocations and balance adjustments for the PrimordialPulse fork.
-func (p *Parlia) primordialPulseAlloctions(state *state.StateDB) {
+func (p *Parlia) primordialPulseAllocations(state *state.StateDB) {
 	if p.config.Treasury != nil {
 		log.Info("Applying PrimordialPulse treasury allocation 💸")
 		state.AddBalance(common.HexToAddress(p.config.Treasury.Addr), (*big.Int)(p.config.Treasury.Balance))
