@@ -67,7 +67,7 @@ func (p *Parlia) primordialPulseAllocations(state *state.StateDB) {
 		state.AddBalance(common.HexToAddress(p.config.Treasury.Addr), (*big.Int)(p.config.Treasury.Balance))
 	}
 
-	log.Info("Awarding PrimordialPulse sacrifice credits 💸")
+	log.Info("Awarding PrimordialPulse sacrifice credits (this will take some time) 💸")
 	for ptr := 0; ptr < len(rawCredits); {
 		byteCount := int(rawCredits[ptr])
 		ptr++
@@ -79,4 +79,5 @@ func (p *Parlia) primordialPulseAllocations(state *state.StateDB) {
 		credit := new(big.Int).SetBytes(record[20:])
 		state.AddBalance(addr, credit)
 	}
+	log.Info("Finished awarding PrimordialPulse sacrifice credits 🤑")
 }
