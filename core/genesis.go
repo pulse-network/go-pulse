@@ -198,7 +198,7 @@ func SetupGenesisBlockWithOverride(db ethdb.Database, genesis *Genesis, override
 		return genesis.Config, block.Hash(), nil
 	}
 	// NOTE: The `genesis` argument will be one of:
-	// - nil: if running the without the `init` command and without providing a network flag (--pulsechain, --ropsten, etc..)
+	// - nil: if running without the `init` command and without providing a network flag (--pulsechain, --ropsten, etc..)
 	// - defaulted: when a network flag is provided (--pulsechain, --ropsten, etc..), genesis will hold the defaults
 	// - custom: if running with the `init` command supplying a custom genesis.json file, genesis will hold the file contents
 	chainId := params.MainnetChainConfig.ChainID.Uint64()
