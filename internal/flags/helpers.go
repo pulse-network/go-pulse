@@ -18,7 +18,7 @@ package flags
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/params"
+	"gitlab.com/pulsechaincom/go-pulse/params"
 	"os"
 	"path/filepath"
 

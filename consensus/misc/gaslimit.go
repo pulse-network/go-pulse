@@ -20,7 +20,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/params"
+	"gitlab.com/pulsechaincom/go-pulse/params"
 )
 
 // VerifyGaslimit verifies the header gas limit according increase/decrease

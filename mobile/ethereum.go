@@ -21,8 +21,8 @@ package geth
 import (
 	"errors"
 
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
+	"gitlab.com/pulsechaincom/go-pulse"
+	"gitlab.com/pulsechaincom/go-pulse/common"
 )
 
 // Subscription represents an event subscription where events are

@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ethereum/go-ethereum/light"
+	"gitlab.com/pulsechaincom/go-pulse/light"
 )
 
 var (

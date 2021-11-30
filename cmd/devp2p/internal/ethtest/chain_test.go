@@ -21,8 +21,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/eth/protocols/eth"
-	"github.com/ethereum/go-ethereum/p2p"
+	"gitlab.com/pulsechaincom/go-pulse/eth/protocols/eth"
+	"gitlab.com/pulsechaincom/go-pulse/p2p"
 	"github.com/stretchr/testify/assert"
 )
 

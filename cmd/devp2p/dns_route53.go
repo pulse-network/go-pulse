@@ -32,8 +32,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"gopkg.in/urfave/cli.v1"
 
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/p2p/dnsdisc"
+	"gitlab.com/pulsechaincom/go-pulse/log"
+	"gitlab.com/pulsechaincom/go-pulse/p2p/dnsdisc"
 )
 
 const (
