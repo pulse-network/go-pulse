@@ -507,12 +507,12 @@ type ChainConfig struct {
 	BerlinBlock         *big.Int `json:"berlinBlock,omitempty"`         // Berlin switch block (nil = no fork, 0 = already on berlin)
 	CatalystBlock       *big.Int `json:"catalystBlock,omitempty"`       // Catalyst switch block (nil = no fork, 0 = already on catalyst)
 
-	RamanujanBlock       *big.Int `json:"ramanujanBlock,omitempty" toml:",omitempty"`       // ramanujanBlock switch block (nil = no fork, 0 = already activated)
-	NielsBlock           *big.Int `json:"nielsBlock,omitempty" toml:",omitempty"`           // nielsBlock switch block (nil = no fork, 0 = already activated)
-	MirrorSyncBlock      *big.Int `json:"mirrorSyncBlock,omitempty" toml:",omitempty"`      // mirrorSyncBlock switch block (nil = no fork, 0 = already activated)
-	PrimordialPulseBlock *big.Int `json:"primordialPulseBlock,omitempty" toml:",omitempty"` // primordialPulseBlock switch block (nil = no fork, 0 = already activated)
+	RamanujanBlock  *big.Int `json:"ramanujanBlock,omitempty" toml:",omitempty"`  // ramanujanBlock switch block (nil = no fork, 0 = already activated)
+	NielsBlock      *big.Int `json:"nielsBlock,omitempty" toml:",omitempty"`      // nielsBlock switch block (nil = no fork, 0 = already activated)
+	MirrorSyncBlock *big.Int `json:"mirrorSyncBlock,omitempty" toml:",omitempty"` // mirrorSyncBlock switch block (nil = no fork, 0 = already activated)
+	LondonBlock     *big.Int `json:"londonBlock,omitempty"`                       // London switch block (nil = no fork, 0 = already on london)
 
-	LondonBlock *big.Int `json:"londonBlock,omitempty"` // London switch block (nil = no fork, 0 = already on london)
+	PrimordialPulseBlock *big.Int `json:"primordialPulseBlock,omitempty" toml:",omitempty"` // primordialPulseBlock switch block (nil = no fork, 0 = already activated)
 
 	// Various consensus engines
 	Ethash *EthashConfig `json:"ethash,omitempty" toml:",omitempty"`
