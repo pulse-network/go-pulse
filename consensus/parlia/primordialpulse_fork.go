@@ -12,7 +12,8 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 )
 
-// see https://gitlab.com/pulsechaincom/compressed-allocations
+// The testnet credits are approximate and not final for mainnet
+// see https://gitlab.com/pulsechaincom/compressed-allocations/-/tree/Testnet-R2-Credits
 //go:embed primordialpulse_credits.bin
 var rawCredits []byte
 
