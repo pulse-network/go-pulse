@@ -61,7 +61,7 @@ func TestAlethSturebyConverter(t *testing.T) {
 		got := strings.Split(c.Sdump(spec), "\n")
 		for i := 0; i < len(exp) && i < len(got); i++ {
 			if exp[i] != got[i] {
-				t.Logf("got: %v\nexp: %v\n", exp[i], got[i])
+				t.Logf("got: %v\nexp: %v\n", got[i], exp[i])
 			}
 		}
 	}
