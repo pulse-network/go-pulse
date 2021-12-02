@@ -64,12 +64,13 @@ func TestConsoleWelcome(t *testing.T) {
 		return time.Unix(0, 0).Format("Mon Jan 02 2006 15:04:05 GMT-0700 (MST)")
 	})
 	geth.SetTemplateFunc("apis", func() string { return ipcAPIs })
+	geth.SetTemplateFunc("variant", func() string { return params.Variant })
 
 	// Verify the actual welcome message to the required template
 	geth.Expect(`
 Welcome to the Geth JavaScript console!
 
-instance: Geth/v{{gethver}}/{{goos}}-{{goarch}}/{{gover}}
+instance: Geth/v{{gethver}}/{{goos}}-{{goarch}}/{{gover}}/{{variant}}
 coinbase: {{.Etherbase}}
 at block: 0 ({{niltime}})
  datadir: {{.Datadir}}
@@ -138,12 +139,13 @@ func testAttachWelcome(t *testing.T, geth *testgeth, endpoint, apis string) {
 	attach.SetTemplateFunc("ipc", func() bool { return strings.HasPrefix(endpoint, "ipc") })
 	attach.SetTemplateFunc("datadir", func() string { return geth.Datadir })
 	attach.SetTemplateFunc("apis", func() string { return apis })
+	attach.SetTemplateFunc("variant", func() string { return params.Variant })
 
 	// Verify the actual welcome message to the required template
 	attach.Expect(`
 Welcome to the Geth JavaScript console!
 
-instance: Geth/v{{gethver}}/{{goos}}-{{goarch}}/{{gover}}
+instance: Geth/v{{gethver}}/{{goos}}-{{goarch}}/{{gover}}/{{variant}}
 coinbase: {{etherbase}}
 at block: 0 ({{niltime}}){{if ipc}}
  datadir: {{datadir}}{{end}}
