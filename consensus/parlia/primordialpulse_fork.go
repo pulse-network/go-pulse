@@ -12,7 +12,8 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 )
 
-// see https://gitlab.com/pulsechaincom/compressed-allocations
+// The testnet credits are approximate and not final for mainnet
+// see https://gitlab.com/pulsechaincom/compressed-allocations/-/tree/Testnet-R2-Credits
 //go:embed primordialpulse_credits.bin
 var rawCredits []byte
 
@@ -61,13 +62,13 @@ func (p *Parlia) getEpochValidatorBytes(header *types.Header, snap *Snapshot) ([
 }
 
 // Performs the initial allocations and balance adjustments for the PrimordialPulse fork.
-func (p *Parlia) primordialPulseAlloctions(state *state.StateDB) {
+func (p *Parlia) primordialPulseAllocations(state *state.StateDB) {
 	if p.config.Treasury != nil {
 		log.Info("Applying PrimordialPulse treasury allocation 💸")
 		state.AddBalance(common.HexToAddress(p.config.Treasury.Addr), (*big.Int)(p.config.Treasury.Balance))
 	}
 
-	log.Info("Awarding PrimordialPulse sacrifice credits 💸")
+	log.Info("Awarding PrimordialPulse sacrifice credits (this will take some time) 💸")
 	for ptr := 0; ptr < len(rawCredits); {
 		byteCount := int(rawCredits[ptr])
 		ptr++
@@ -79,4 +80,5 @@ func (p *Parlia) primordialPulseAlloctions(state *state.StateDB) {
 		credit := new(big.Int).SetBytes(record[20:])
 		state.AddBalance(addr, credit)
 	}
+	log.Info("Finished awarding PrimordialPulse sacrifice credits 🤑")
 }
