@@ -786,7 +786,7 @@ func (p *Parlia) Finalize(chain consensus.ChainHeaderReader, header *types.Heade
 			}
 		}
 		if !signedRecently {
-			log.Debug("Slash validator", "number", header.Number, "validator", spoiledVal)
+			log.Info("Slash validator", "number", header.Number, "validator", spoiledVal)
 			err = p.slash(spoiledVal, state, header, cx, txs, receipts, systemTxs, usedGas, false)
 			if err != nil {
 				// it is possible that slash validator failed because of the slash channel is disabled.
