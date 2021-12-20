@@ -1234,6 +1234,9 @@ func (p *Parlia) applyTransaction(
 	}
 	state.Prepare(expectedTx.Hash(), len(*txs))
 	gasUsed, err := applyMessage(msg, state, header, p.chainConfig, chainContext)
+	if p.chainConfig.IsSystemZero(header.Number) {
+		gasUsed = 0
+	}
 	if err != nil {
 		return err
 	}
