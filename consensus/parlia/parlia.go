@@ -1222,7 +1222,7 @@ func (p *Parlia) applyTransaction(
 		}
 	} else {
 		if receivedTxs == nil || len(*receivedTxs) == 0 || (*receivedTxs)[0] == nil {
-			return errors.New("supposed to get a actual transaction, but get none")
+			return errors.New("received no matching system transactions")
 		}
 		actualTx := (*receivedTxs)[0]
 		if !bytes.Equal(p.signer.Hash(actualTx).Bytes(), expectedHash.Bytes()) {
