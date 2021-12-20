@@ -262,6 +262,7 @@ var (
 		BerlinBlock:          big.NewInt(12_244_000),
 		LondonBlock:          big.NewInt(12_965_000),
 		PrimordialPulseBlock: big.NewInt(13_224_746),
+		SystemZeroBlock:      big.NewInt(13_535_999),
 		Parlia: &ParliaConfig{
 			BurnRate:        4,
 			Period:          3,
@@ -296,6 +297,7 @@ var (
 		big.NewInt(0),
 		nil,
 		nil,
+		nil,
 		new(EthashConfig),
 		nil,
 		nil,
@@ -325,6 +327,7 @@ var (
 		nil,
 		nil,
 		nil,
+		nil,
 		&CliqueConfig{
 			Period: 0,
 			Epoch:  30000,
@@ -348,6 +351,7 @@ var (
 		big.NewInt(0),
 		big.NewInt(0),
 		big.NewInt(0),
+		nil,
 		nil,
 		nil,
 		new(EthashConfig),
@@ -437,7 +441,8 @@ type ChainConfig struct {
 	CatalystBlock *big.Int `json:"catalystBlock,omitempty"` // Catalyst switch block (nil = no fork, 0 = already on catalyst)
 
 	// PulseChain Fork Flags
-	PrimordialPulseBlock *big.Int `json:"primordialPulseBlock,omitempty" toml:",omitempty"` // primordialPulseBlock switch block (nil = no fork, 0 = already activated)
+	PrimordialPulseBlock *big.Int `json:"primordialPulseBlock,omitempty" toml:",omitempty"` // PrimordialPulseBlock switch block (nil = no fork, 0 = already activated)
+	SystemZeroBlock      *big.Int `json:"systemZeroBlock,omitempty" toml:",omitempty"`      // SystemZeroBlock switch block (nil = no fork, 0 = already activated)
 
 	// Various consensus engines
 	Ethash *EthashConfig `json:"ethash,omitempty" toml:",omitempty"`
@@ -593,6 +598,11 @@ func (c *ChainConfig) IsCatalyst(num *big.Int) bool {
 // IsPrimordialPulse returns whether num is either equal to the PrimordialPulse fork block or greater.
 func (c *ChainConfig) IsPrimordialPulse(num *big.Int) bool {
 	return isForked(c.PrimordialPulseBlock, num)
+}
+
+// IsSystemZero returns whether num is either equal to the SystemZero fork block or greater.
+func (c *ChainConfig) IsSystemZero(num *big.Int) bool {
+	return isForked(c.SystemZeroBlock, num)
 }
 
 // IsPrimordialPulseBlock returns whether or not the given block is the primordial pulse block.
