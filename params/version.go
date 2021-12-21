@@ -22,8 +22,8 @@ import (
 
 const (
 	VersionMajor = 0        // Major version component of the current release
-	VersionMinor = 5        // Minor version component of the current release
-	VersionPatch = 1        // Patch version component of the current release
+	VersionMinor = 6        // Minor version component of the current release
+	VersionPatch = 0        // Patch version component of the current release
 	VersionMeta  = "stable" // Version metadata to append to the version string
 	VariantMeta  = "pulse"  // Version metadata to append to the version string
 )
@@ -35,7 +35,7 @@ var Version = func() string {
 
 // Variant holds the textual version string.
 var Variant = func() string {
-	return fmt.Sprintf("%s", VariantMeta)
+	return VariantMeta
 }()
 
 // VersionWithMeta holds the textual version string including the metadata.
