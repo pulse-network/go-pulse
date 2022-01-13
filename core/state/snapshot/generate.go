@@ -48,13 +48,13 @@ var (
 	// accountCheckRange is the upper limit of the number of accounts involved in
 	// each range check. This is a value estimated based on experience. If this
 	// value is too large, the failure rate of range prove will increase. Otherwise
-	// the the value is too small, the efficiency of the state recovery will decrease.
+	// the value is too small, the efficiency of the state recovery will decrease.
 	accountCheckRange = 128
 
 	// storageCheckRange is the upper limit of the number of storage slots involved
 	// in each range check. This is a value estimated based on experience. If this
 	// value is too large, the failure rate of range prove will increase. Otherwise
-	// the the value is too small, the efficiency of the state recovery will decrease.
+	// the value is too small, the efficiency of the state recovery will decrease.
 	storageCheckRange = 1024
 
 	// errMissingTrie is returned if the target trie is missing while the generation
@@ -237,6 +237,54 @@ func (result *proofResult) forEach(callback func(key []byte, val []byte) error) 
 		if err := callback(key, val); err != nil {
 			return err
 		}
+		keys = append(keys, common.CopyBytes(key[len(prefix):]))
+
+		if valueConvertFn == nil {
+			vals = append(vals, common.CopyBytes(iter.Value()))
+		} else {
+			val, err := valueConvertFn(iter.Value())
+			if err != nil {
+				// Special case, the state data is corrupted (invalid slim-format account),
+				// don't abort the entire procedure directly. Instead, let the fallback
+				// generation to heal the invalid data.
+				//
+				// Here append the original value to ensure that the number of key and
+				// value are the same.
+				vals = append(vals, common.CopyBytes(iter.Value()))
+				log.Error("Failed to convert account state data", "err", err)
+			} else {
+				vals = append(vals, val)
+			}
+		}
+	}
+	// Update metrics for database iteration and merkle proving
+	if kind == "storage" {
+		snapStorageSnapReadCounter.Inc(time.Since(start).Nanoseconds())
+	} else {
+		snapAccountSnapReadCounter.Inc(time.Since(start).Nanoseconds())
+	}
+	defer func(start time.Time) {
+		if kind == "storage" {
+			snapStorageProveCounter.Inc(time.Since(start).Nanoseconds())
+		} else {
+			snapAccountProveCounter.Inc(time.Since(start).Nanoseconds())
+		}
+	}(time.Now())
+
+	// The snap state is exhausted, pass the entire key/val set for verification
+	if origin == nil && !diskMore {
+		stackTr := trie.NewStackTrie(nil)
+		for i, key := range keys {
+			stackTr.TryUpdate(key, vals[i])
+		}
+		if gotRoot := stackTr.Hash(); gotRoot != root {
+			return &proofResult{
+				keys:     keys,
+				vals:     vals,
+				proofErr: fmt.Errorf("wrong root: have %#x want %#x", gotRoot, root),
+			}, nil
+		}
+		return &proofResult{keys: keys, vals: vals}, nil
 	}
 	return nil
 }
@@ -436,7 +484,7 @@ func (dl *diskLayer) generateRange(root common.Hash, prefix []byte, kind string,
 		for i, key := range result.keys {
 			snapTrie.Update(key, result.vals[i])
 		}
-		root, _ := snapTrie.Commit(nil)
+		root, _, _ := snapTrie.Commit(nil)
 		snapTrieDb.Commit(root, false, nil)
 	}
 	tr := result.tr
@@ -560,6 +608,12 @@ func (dl *diskLayer) generate(stats *generatorStats) {
 		default:
 		}
 		if batch.ValueSize() > ethdb.IdealBatchSize || abort != nil {
+			if bytes.Compare(currentLocation, dl.genMarker) < 0 {
+				log.Error("Snapshot generator went backwards",
+					"currentLocation", fmt.Sprintf("%x", currentLocation),
+					"genMarker", fmt.Sprintf("%x", dl.genMarker))
+			}
+
 			// Flush out the batch anyway no matter it's empty or not.
 			// It's possible that all the states are recovered and the
 			// generation indeed makes progress.
@@ -634,8 +688,14 @@ func (dl *diskLayer) generate(stats *generatorStats) {
 			stats.storage += common.StorageSize(1 + common.HashLength + dataLen)
 			stats.accounts++
 		}
+		marker := accountHash[:]
+		// If the snap generation goes here after interrupted, genMarker may go backward
+		// when last genMarker is consisted of accountHash and storageHash
+		if accMarker != nil && bytes.Equal(marker, accMarker) && len(dl.genMarker) > common.HashLength {
+			marker = dl.genMarker[:]
+		}
 		// If we've exceeded our batch allowance or termination was requested, flush to disk
-		if err := checkAndFlush(accountHash[:]); err != nil {
+		if err := checkAndFlush(marker); err != nil {
 			return err
 		}
 		// If the iterated account is the contract, create a further loop to

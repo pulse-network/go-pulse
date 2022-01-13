@@ -141,17 +141,6 @@ var Flags = []cli.Flag{
 	traceFlag,
 }
 
-// This is the list of deprecated debugging flags.
-var DeprecatedFlags = []cli.Flag{
-	legacyPprofPortFlag,
-	legacyPprofAddrFlag,
-	legacyMemprofilerateFlag,
-	legacyBlockprofilerateFlag,
-	legacyCpuprofileFlag,
-	legacyBacktraceAtFlag,
-	legacyDebugFlag,
-}
-
 var glogger *log.GlogHandler
 
 func init() {
@@ -183,45 +172,23 @@ func Setup(ctx *cli.Context) error {
 	glogger.Vmodule(vmodule)
 
 	debug := ctx.GlobalBool(debugFlag.Name)
-	if ctx.GlobalIsSet(legacyDebugFlag.Name) {
-		debug = ctx.GlobalBool(legacyDebugFlag.Name)
-		log.Warn("The flag --debug is deprecated and will be removed in the future, please use --log.debug")
-	}
 	if ctx.GlobalIsSet(debugFlag.Name) {
 		debug = ctx.GlobalBool(debugFlag.Name)
 	}
 	log.PrintOrigins(debug)
 
 	backtrace := ctx.GlobalString(backtraceAtFlag.Name)
-	if b := ctx.GlobalString(legacyBacktraceAtFlag.Name); b != "" {
-		backtrace = b
-		log.Warn("The flag --backtrace is deprecated and will be removed in the future, please use --log.backtrace")
-	}
-	if b := ctx.GlobalString(backtraceAtFlag.Name); b != "" {
-		backtrace = b
-	}
 	glogger.BacktraceAt(backtrace)
 
 	log.Root().SetHandler(glogger)
 
 	// profiling, tracing
 	runtime.MemProfileRate = memprofilerateFlag.Value
-	if ctx.GlobalIsSet(legacyMemprofilerateFlag.Name) {
-		runtime.MemProfileRate = ctx.GlobalInt(legacyMemprofilerateFlag.Name)
-		log.Warn("The flag --memprofilerate is deprecated and will be removed in the future, please use --pprof.memprofilerate")
-	}
 	if ctx.GlobalIsSet(memprofilerateFlag.Name) {
 		runtime.MemProfileRate = ctx.GlobalInt(memprofilerateFlag.Name)
 	}
 
-	blockProfileRate := blockprofilerateFlag.Value
-	if ctx.GlobalIsSet(legacyBlockprofilerateFlag.Name) {
-		blockProfileRate = ctx.GlobalInt(legacyBlockprofilerateFlag.Name)
-		log.Warn("The flag --blockprofilerate is deprecated and will be removed in the future, please use --pprof.blockprofilerate")
-	}
-	if ctx.GlobalIsSet(blockprofilerateFlag.Name) {
-		blockProfileRate = ctx.GlobalInt(blockprofilerateFlag.Name)
-	}
+	blockProfileRate := ctx.GlobalInt(blockprofilerateFlag.Name)
 	Handler.SetBlockProfileRate(blockProfileRate)
 
 	if traceFile := ctx.GlobalString(traceFlag.Name); traceFile != "" {
