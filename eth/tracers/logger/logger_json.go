@@ -52,8 +52,6 @@ func (l *JSONLogger) CaptureFault(pc uint64, op vm.OpCode, gas uint64, cost uint
 	l.CaptureState(pc, op, gas, cost, scope, nil, depth, err)
 }
 
-func (l *JSONLogger) CaptureFault(*EVM, uint64, OpCode, uint64, uint64, *ScopeContext, int, error) {}
-
 // CaptureState outputs state information on the logger.
 func (l *JSONLogger) CaptureState(pc uint64, op vm.OpCode, gas, cost uint64, scope *vm.ScopeContext, rData []byte, depth int, err error) {
 	memory := scope.Memory
@@ -73,7 +71,7 @@ func (l *JSONLogger) CaptureState(pc uint64, op vm.OpCode, gas, cost uint64, sco
 		log.Memory = memory.Data()
 	}
 	if !l.cfg.DisableStack {
-		log.Stack = stack.data
+		log.Stack = stack.Data()
 	}
 	if l.cfg.EnableReturnData {
 		log.ReturnData = rData

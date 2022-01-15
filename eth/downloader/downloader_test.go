@@ -232,7 +232,6 @@ func (dlp *downloadTesterPeer) RequestHeadersByNumber(origin uint64, amount int,
 				break
 			}
 		}
-		hashes = append(hashes, hash)
 	}
 	hashes := make([]common.Hash, len(headers))
 	for i, header := range headers {
@@ -457,6 +456,7 @@ func TestThrottling66Snap(t *testing.T) { testThrottling(t, eth.ETH66, SnapSync)
 
 func testThrottling(t *testing.T, protocol uint, mode SyncMode) {
 	tester := newTester()
+	defer tester.terminate()
 
 	// Create a long block chain to download and the tester
 	targetBlocks := len(testChainBase.blocks) - 1
@@ -514,7 +514,6 @@ func testThrottling(t *testing.T, protocol uint, mode SyncMode) {
 		if cached != blockCacheMaxItems && cached != blockCacheMaxItems-reorgProtHeaderDelay && retrieved+cached+frozen != targetBlocks+1 && retrieved+cached+frozen != targetBlocks+1-reorgProtHeaderDelay {
 			t.Fatalf("block count mismatch: have %v, want %v (owned %v, blocked %v, target %v)", cached, blockCacheMaxItems, retrieved, frozen, targetBlocks+1)
 		}
-
 		// Permit the blocked blocks to import
 		if atomic.LoadUint32(&blocked) > 0 {
 			atomic.StoreUint32(&blocked, uint32(0))
@@ -526,8 +525,6 @@ func testThrottling(t *testing.T, protocol uint, mode SyncMode) {
 	if err := <-errc; err != nil {
 		t.Fatalf("block synchronization failed: %v", err)
 	}
-	tester.terminate()
-
 }
 
 // Tests that simple synchronization against a forked chain works correctly. In
@@ -629,6 +626,7 @@ func TestBoundedHeavyForkedSync66Light(t *testing.T) {
 
 func testBoundedHeavyForkedSync(t *testing.T, protocol uint, mode SyncMode) {
 	tester := newTester()
+	defer tester.terminate()
 
 	// Create a long enough forked chain
 	chainA := testChainForkLightA
@@ -838,6 +836,7 @@ func TestInvalidHeaderRollback66Snap(t *testing.T) { testInvalidHeaderRollback(t
 
 func testInvalidHeaderRollback(t *testing.T, protocol uint, mode SyncMode) {
 	tester := newTester()
+	defer tester.terminate()
 
 	// Create a small enough block chain to download
 	targetBlocks := 3*fsHeaderSafetyNet + 256 + fsMinFullBlocks
@@ -923,13 +922,13 @@ func TestHighTDStarvationAttack66Light(t *testing.T) {
 
 func testHighTDStarvationAttack(t *testing.T, protocol uint, mode SyncMode) {
 	tester := newTester()
+	defer tester.terminate()
 
 	chain := testChainBase.shorten(1)
 	tester.newPeer("attack", protocol, chain.blocks[1:])
 	if err := tester.sync("attack", big.NewInt(1000000), mode); err != errStallingPeer {
 		t.Fatalf("synchronisation error mismatch: have %v, want %v", err, errStallingPeer)
 	}
-	tester.terminate()
 }
 
 // Tests that misbehaving peers are disconnected, whilst behaving ones are not.
@@ -988,6 +987,7 @@ func TestSyncProgress66Light(t *testing.T) { testSyncProgress(t, eth.ETH66, Ligh
 func testSyncProgress(t *testing.T, protocol uint, mode SyncMode) {
 	tester := newTester()
 	defer tester.terminate()
+
 	chain := testChainBase.shorten(blockCacheMaxItems - 15)
 
 	// Set a sync init hook to catch progress changes
@@ -1135,6 +1135,7 @@ func TestFailedSyncProgress66Light(t *testing.T) { testFailedSyncProgress(t, eth
 func testFailedSyncProgress(t *testing.T, protocol uint, mode SyncMode) {
 	tester := newTester()
 	defer tester.terminate()
+
 	chain := testChainBase.shorten(blockCacheMaxItems - 15)
 
 	// Set a sync init hook to catch progress changes
@@ -1200,6 +1201,7 @@ func TestFakedSyncProgress66Light(t *testing.T) { testFakedSyncProgress(t, eth.E
 func testFakedSyncProgress(t *testing.T, protocol uint, mode SyncMode) {
 	tester := newTester()
 	defer tester.terminate()
+
 	chain := testChainBase.shorten(blockCacheMaxItems - 15)
 
 	// Set a sync init hook to catch progress changes

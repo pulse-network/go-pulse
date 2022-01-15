@@ -341,5 +341,4 @@ func TestRlpDecodeParentHash(t *testing.T) {
 			}
 		}
 	}
-	return NewBlock(header, txs, uncles, receipts, newHasher())
 }

@@ -424,6 +424,7 @@ func testChainID(t *testing.T, client *rpc.Client) {
 
 func testGetBlock(t *testing.T, client *rpc.Client) {
 	ec := NewClient(client)
+
 	// Get current block number
 	blockNumber, err := ec.BlockNumber(context.Background())
 	if err != nil {
@@ -477,6 +478,7 @@ func testStatusFunctions(t *testing.T, client *rpc.Client) {
 	if progress != nil {
 		t.Fatalf("unexpected progress: %v", progress)
 	}
+
 	// NetworkID
 	networkID, err := ec.NetworkID(context.Background())
 	if err != nil {

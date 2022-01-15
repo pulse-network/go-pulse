@@ -18,7 +18,6 @@ package downloader
 
 import (
 	"sync"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
@@ -67,52 +66,11 @@ func (d *Downloader) runStateSync(s *stateSync) *stateSync {
 	for {
 		select {
 		case next := <-d.stateSyncStart:
-			d.spindownStateSync(active, finished, timeout, peerDrop)
 			return next
 
 		case <-s.done:
-			d.spindownStateSync(active, finished, timeout, peerDrop)
 			return nil
 		}
-	}
-}
-
-// spindownStateSync 'drains' the outstanding requests; some will be delivered and other
-// will time out. This is to ensure that when the next stateSync starts working, all peers
-// are marked as idle and de facto _are_ idle.
-func (d *Downloader) spindownStateSync(active map[string]*stateReq, finished []*stateReq, timeout chan *stateReq, peerDrop chan *peerConnection) {
-	log.Trace("State sync spinning down", "active", len(active), "finished", len(finished))
-	for len(active) > 0 {
-		var (
-			req    *stateReq
-			reason string
-		)
-		select {
-		// Handle (drop) incoming state packs:
-		case pack := <-d.stateCh:
-			req = active[pack.PeerId()]
-			reason = "delivered"
-		// Handle dropped peer connections:
-		case p := <-peerDrop:
-			req = active[p.id]
-			reason = "peerdrop"
-		// Handle timed-out requests:
-		case req = <-timeout:
-			reason = "timeout"
-		}
-		if req == nil {
-			continue
-		}
-		req.peer.log.Trace("State peer marked idle (spindown)", "req.items", int(req.nItems), "reason", reason)
-		req.timer.Stop()
-		delete(active, req.peer.id)
-		req.peer.SetNodeDataIdle(int(req.nItems), time.Now())
-	}
-	// The 'finished' set contains deliveries that we were going to pass to processing.
-	// Those are now moot, but we still need to set those peers as idle, which would
-	// otherwise have been done after processing
-	for _, req := range finished {
-		req.peer.SetNodeDataIdle(int(req.nItems), time.Now())
 	}
 }
 

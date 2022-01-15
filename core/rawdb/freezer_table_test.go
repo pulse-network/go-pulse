@@ -685,34 +685,6 @@ func checkRetrieveError(t *testing.T, f *freezerTable, items map[uint64]error) {
 			t.Fatalf("wrong error for item %d: %v", item, err)
 		}
 	}
-	checkPresent(4)
-	// Now, let's pretend we have deleted 1M items
-	{
-		// Read the index file
-		p := filepath.Join(os.TempDir(), fmt.Sprintf("%v.ridx", fname))
-		indexFile, err := os.OpenFile(p, os.O_RDWR, 0644)
-		if err != nil {
-			t.Fatal(err)
-		}
-		indexBuf := make([]byte, 3*indexEntrySize)
-		indexFile.Read(indexBuf)
-
-		// Update the index file, so that we store
-		// [ file = 2, offset = 1M ] at index zero
-
-		tailId := uint32(2)           // First file is 2
-		itemOffset := uint32(1000000) // We have removed 1M items
-		zeroIndex := indexEntry{
-			offset:  itemOffset,
-			filenum: tailId,
-		}
-		buf := zeroIndex.marshallBinary()
-		// Overwrite index zero
-		copy(indexBuf, buf)
-		indexFile.WriteAt(indexBuf, 0)
-		indexFile.Close()
-	}
-	checkPresent(1000000)
 }
 
 // Gets a chunk of data, filled with 'b'

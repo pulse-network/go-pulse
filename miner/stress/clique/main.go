@@ -69,7 +69,6 @@ func main() {
 		nodes  []*eth.Ethereum
 		enodes []*enode.Node
 	)
-
 	for _, sealer := range sealers {
 		// Start the node and wait until it's up
 		stack, ethBackend, err := makeSealer(genesis)

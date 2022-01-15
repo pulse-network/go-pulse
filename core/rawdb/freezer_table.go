@@ -85,19 +85,6 @@ func (start *indexEntry) bounds(end *indexEntry) (startOffset, endOffset, fileId
 	return start.offset, end.offset, end.filenum
 }
 
-// bounds returns the start- and end- offsets, and the file number of where to
-// read there data item marked by the two index entries. The two entries are
-// assumed to be sequential.
-func (start *indexEntry) bounds(end *indexEntry) (startOffset, endOffset, fileId uint32) {
-	if start.filenum != end.filenum {
-		// If a piece of data 'crosses' a data-file,
-		// it's actually in one piece on the second data-file.
-		// We return a zero-indexEntry for the second file as start
-		return 0, end.offset, end.filenum
-	}
-	return start.offset, end.offset, end.filenum
-}
-
 // freezerTable represents a single chained data table within the freezer (e.g. blocks).
 // It consists of a data file (snappy encoded arbitrary data blobs) and an indexEntry
 // file (uncompressed 64 bit indices into the data file).
@@ -573,6 +560,7 @@ func (t *freezerTable) RetrieveItems(start, count, maxBytes uint64) ([][]byte, e
 func (t *freezerTable) retrieveItems(start, count, maxBytes uint64) ([]byte, []int, error) {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
+
 	// Ensure the table and the item is accessible
 	if t.index == nil || t.head == nil {
 		return nil, nil, errClosed

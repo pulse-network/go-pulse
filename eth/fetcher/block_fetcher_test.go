@@ -531,14 +531,6 @@ func testPendingDeduplication(t *testing.T, light bool) {
 			return tester.getHeader(hashes[0]) == nil
 		}
 	}
-	checkNonExist := func() bool {
-		return tester.getBlock(hashes[0]) == nil
-	}
-	if light {
-		checkNonExist = func() bool {
-			return tester.getHeader(hashes[0]) == nil
-		}
-	}
 	// Announce the same block many times until it's fetched (wait for any pending ops)
 	for checkNonExist() {
 		tester.fetcher.Notify("repeater", hashes[0], 1, time.Now().Add(-arriveTimeout), headerWrapper, bodyFetcher)

@@ -38,11 +38,6 @@ const (
 	receiptType = uint(1)
 )
 
-const (
-	bodyType    = uint(0)
-	receiptType = uint(1)
-)
-
 var (
 	blockCacheMaxItems     = 8192              // Maximum number of blocks to cache before throttling the download
 	blockCacheInitialItems = 2048              // Initial number of blocks to start fetching, before we know the sizes of the blocks
@@ -390,20 +385,6 @@ func (q *queue) Results(block bool) []*fetchResult {
 		case ch <- true:
 		default:
 		}
-		q.resultSize = common.StorageSize(blockCacheSizeWeight)*size +
-			(1-common.StorageSize(blockCacheSizeWeight))*q.resultSize
-	}
-	// Using the newly calibrated resultsize, figure out the new throttle limit
-	// on the result cache
-	throttleThreshold := uint64((common.StorageSize(blockCacheMemory) + q.resultSize - 1) / q.resultSize)
-	throttleThreshold = q.resultCache.SetThrottleThreshold(throttleThreshold)
-
-	// Log some info at certain times
-	if time.Since(q.lastStatLog) > 60*time.Second {
-		q.lastStatLog = time.Now()
-		info := q.Stats()
-		info = append(info, "throttle", throttleThreshold)
-		log.Info("Downloader queue stats", info...)
 	}
 	// Log some info at certain times
 	if time.Since(q.lastStatLog) > 60*time.Second {

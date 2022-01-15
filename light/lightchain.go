@@ -477,17 +477,6 @@ func (lc *LightChain) GetTdOdr(ctx context.Context, hash common.Hash, number uin
 	return td
 }
 
-// GetHeaderByNumberOdr retrieves the total difficult from the database or
-// network by hash and number, caching it (associated with its hash) if found.
-func (lc *LightChain) GetTdOdr(ctx context.Context, hash common.Hash, number uint64) *big.Int {
-	td := lc.GetTd(hash, number)
-	if td != nil {
-		return td
-	}
-	td, _ = GetTd(ctx, lc.odr, hash, number)
-	return td
-}
-
 // GetHeader retrieves a block header from the database by hash and number,
 // caching it if found.
 func (lc *LightChain) GetHeader(hash common.Hash, number uint64) *types.Header {

@@ -229,20 +229,6 @@ func IsCodeKey(key []byte) (bool, []byte) {
 	return false, nil
 }
 
-// codeKey = CodePrefix + hash
-func codeKey(hash common.Hash) []byte {
-	return append(CodePrefix, hash.Bytes()...)
-}
-
-// IsCodeKey reports whether the given byte slice is the key of contract code,
-// if so return the raw code hash as well.
-func IsCodeKey(key []byte) (bool, []byte) {
-	if bytes.HasPrefix(key, CodePrefix) && len(key) == common.HashLength+len(CodePrefix) {
-		return true, key[len(CodePrefix):]
-	}
-	return false, nil
-}
-
 // configKey = configPrefix + hash
 func configKey(hash common.Hash) []byte {
 	return append(configPrefix, hash.Bytes()...)

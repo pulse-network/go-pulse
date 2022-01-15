@@ -237,54 +237,6 @@ func (result *proofResult) forEach(callback func(key []byte, val []byte) error) 
 		if err := callback(key, val); err != nil {
 			return err
 		}
-		keys = append(keys, common.CopyBytes(key[len(prefix):]))
-
-		if valueConvertFn == nil {
-			vals = append(vals, common.CopyBytes(iter.Value()))
-		} else {
-			val, err := valueConvertFn(iter.Value())
-			if err != nil {
-				// Special case, the state data is corrupted (invalid slim-format account),
-				// don't abort the entire procedure directly. Instead, let the fallback
-				// generation to heal the invalid data.
-				//
-				// Here append the original value to ensure that the number of key and
-				// value are the same.
-				vals = append(vals, common.CopyBytes(iter.Value()))
-				log.Error("Failed to convert account state data", "err", err)
-			} else {
-				vals = append(vals, val)
-			}
-		}
-	}
-	// Update metrics for database iteration and merkle proving
-	if kind == "storage" {
-		snapStorageSnapReadCounter.Inc(time.Since(start).Nanoseconds())
-	} else {
-		snapAccountSnapReadCounter.Inc(time.Since(start).Nanoseconds())
-	}
-	defer func(start time.Time) {
-		if kind == "storage" {
-			snapStorageProveCounter.Inc(time.Since(start).Nanoseconds())
-		} else {
-			snapAccountProveCounter.Inc(time.Since(start).Nanoseconds())
-		}
-	}(time.Now())
-
-	// The snap state is exhausted, pass the entire key/val set for verification
-	if origin == nil && !diskMore {
-		stackTr := trie.NewStackTrie(nil)
-		for i, key := range keys {
-			stackTr.TryUpdate(key, vals[i])
-		}
-		if gotRoot := stackTr.Hash(); gotRoot != root {
-			return &proofResult{
-				keys:     keys,
-				vals:     vals,
-				proofErr: fmt.Errorf("wrong root: have %#x want %#x", gotRoot, root),
-			}, nil
-		}
-		return &proofResult{keys: keys, vals: vals}, nil
 	}
 	return nil
 }

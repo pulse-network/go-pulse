@@ -373,22 +373,6 @@ func (d *Downloader) synchronise(id string, hash common.Hash, td *big.Int, mode 
 			snapshots.Disable()
 		}
 	}
-	// If snap sync was requested, create the snap scheduler and switch to fast
-	// sync mode. Long term we could drop fast sync or merge the two together,
-	// but until snap becomes prevalent, we should support both. TODO(karalabe).
-	if mode == SnapSync {
-		if !d.snapSync {
-			// Snap sync uses the snapshot namespace to store potentially flakey data until
-			// sync completely heals and finishes. Pause snapshot maintenance in the mean
-			// time to prevent access.
-			if snapshots := d.blockchain.Snapshots(); snapshots != nil { // Only nil in tests
-				snapshots.Disable()
-			}
-			log.Warn("Enabling snapshot sync prototype")
-			d.snapSync = true
-		}
-		mode = FastSync
-	}
 	// Reset the queue, peer set and wake channels to clean any internal leftover state
 	d.queue.Reset(blockCacheMaxItems, blockCacheInitialItems)
 	d.peers.Reset()
@@ -618,9 +602,6 @@ func (d *Downloader) Terminate() {
 	case <-d.quitCh:
 	default:
 		close(d.quitCh)
-	}
-	if d.stateBloom != nil {
-		d.stateBloom.Close()
 	}
 	d.quitLock.Unlock()
 
