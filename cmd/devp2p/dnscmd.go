@@ -25,13 +25,12 @@ import (
 	"path/filepath"
 	"time"
 
-	"gopkg.in/urfave/cli.v1"
-
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/console/prompt"
 	"github.com/ethereum/go-ethereum/p2p/dnsdisc"
 	"github.com/ethereum/go-ethereum/p2p/enode"
+	"gopkg.in/urfave/cli.v1"
 )
 
 var (
@@ -116,10 +115,9 @@ var (
 )
 
 const (
-	rootTTL = 30 * 60 // 30 min
-	// CloudFlare: TTLs exceeding 24 hours (86400 seconds) are ignored by most resolvers.
-	// Support will be removed in the future.
-	treeNodeTTL = 24 * 60 * 60 // 24 hours
+	rootTTL               = 30 * 60              // 30 min
+	treeNodeTTL           = 4 * 7 * 24 * 60 * 60 // 4 weeks
+	treeNodeTTLCloudflare = 24 * 60 * 60         // 1 day
 )
 
 // dnsSync performs dnsSyncCommand.
