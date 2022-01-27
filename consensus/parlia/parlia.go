@@ -1045,7 +1045,7 @@ func (p *Parlia) getCurrentValidators(blockHash common.Hash) ([]common.Address, 
 	// call
 	msgData := (hexutil.Bytes)(data)
 	toAddress := common.HexToAddress(systemcontracts.ValidatorContract)
-	gas := (hexutil.Uint64)(uint64(math.MaxUint64 / 2))
+	gas := hexutil.Uint64(50_000_000)
 	result, err := p.ethAPI.Call(ctx, ethapi.TransactionArgs{
 		Gas:  &gas,
 		To:   &toAddress,
