@@ -269,7 +269,9 @@ var (
 		MuirGlacierBlock:     big.NewInt(9_200_000),
 		BerlinBlock:          big.NewInt(12_244_000),
 		LondonBlock:          big.NewInt(12_965_000),
-		PrimordialPulseBlock: big.NewInt(13_224_746),
+		ArrowGlacierBlock:    big.NewInt(13_773_000),
+		PrimordialPulseBlock: big.NewInt(13_773_000),
+		SystemZeroBlock:      big.NewInt(13_773_000),
 		Parlia: &ParliaConfig{
 			Period: 3,
 			Epoch:  200,
@@ -278,7 +280,7 @@ var (
 	}
 
 	PulseChainTestnetConfig = &ChainConfig{
-		ChainID:              big.NewInt(940),
+		ChainID:              big.NewInt(941),
 		HomesteadBlock:       big.NewInt(1_150_000),
 		DAOForkBlock:         big.NewInt(1_920_000),
 		DAOForkSupport:       true,
@@ -293,8 +295,9 @@ var (
 		MuirGlacierBlock:     big.NewInt(9_200_000),
 		BerlinBlock:          big.NewInt(12_244_000),
 		LondonBlock:          big.NewInt(12_965_000),
-		PrimordialPulseBlock: big.NewInt(13_224_746),
-		SystemZeroBlock:      big.NewInt(13_535_999),
+		ArrowGlacierBlock:    big.NewInt(13_773_000),
+		PrimordialPulseBlock: big.NewInt(14_361_000),
+		SystemZeroBlock:      big.NewInt(14_361_000),
 		Parlia: &ParliaConfig{
 			BurnRate:        4,
 			Period:          3,
