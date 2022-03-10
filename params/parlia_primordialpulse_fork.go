@@ -30,7 +30,7 @@ var pulseChainTestnetSystemContracts = []SystemContract{
 
 func init() {
 	var pulseChainTestnetTreasuryBalance math.HexOrDecimal256
-	pulseChainTestnetTreasuryBalance.UnmarshalText([]byte("0x33b2e3c9fd0803ce8000000"))
+	pulseChainTestnetTreasuryBalance.UnmarshalText([]byte("0xC9F2C9CD04674EDEA40000000"))
 
 	pulseChainTestnetTreasury = Treasury{
 		Addr:    "0xceB59257450820132aB274ED61C49E5FD96E8868",
