@@ -114,7 +114,7 @@ func KnownDNSNetwork(genesis common.Hash, networkID uint64, protocol string) str
 	var dnsPrefix = "enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@"
 	var tld = ".ethdisco.net"
 
-	if networkID == 369 || networkID == 940 {
+	if networkID == 369 || networkID == 941 {
 		tld = ".pulsedisco.net"
 		dnsPrefix = "enrtree://APFXO36RU3TWV7XFGWI2TYF5IDA3WM2GPTRL3TCZINWHZX4R6TAOK@"
 	}
@@ -124,7 +124,7 @@ func KnownDNSNetwork(genesis common.Hash, networkID uint64, protocol string) str
 		switch networkID {
 		case 369:
 			net = "PulseChain"
-		case 940:
+		case 941:
 			net = "PulseChainTestnet"
 		default:
 			net = "mainnet"

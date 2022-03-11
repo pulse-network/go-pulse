@@ -170,7 +170,7 @@ func NewNode(datadir string, config *NodeConfig) (stack *Node, _ error) {
 		if config.EthereumGenesis == PulseChainTestnetGenesis() {
 			genesis.Config = params.PulseChainTestnetConfig
 			if config.EthereumNetworkID == 1 {
-				config.EthereumNetworkID = 940
+				config.EthereumNetworkID = 941
 			}
 		}
 		// If we have the Ropsten testnet, hard code the chain configs too
