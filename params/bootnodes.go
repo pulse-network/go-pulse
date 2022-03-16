@@ -39,9 +39,9 @@ var PulseChainBootnodes []string
 // PulseChainTestnetBootnodes are the enode URLs of the P2P bootstrap nodes running on
 // the main PulseChain network.
 var PulseChainTestnetBootnodes = []string{
-	"enode://b7db8d070b3cb2ea953bd59925ff3ccf535592217cf738f2203ec192c728da32f871716aea1f5556e5b8f6b78f74fb8da4c7abd7c94790714880b742a3154a82@34.200.234.173:30312", // bootnode-aws-us-east-1-001
-	"enode://85cc7a7353398a5073a9e53c44f1d6f204951c7520587d61f12cf7251aa6aa9356c9a7ee728e290e31160d1a150d8412acc0f7311365079836197fa67b59d304@52.91.187.178:30312",  // bootnode-aws-us-east-1-002
-	"enode://8e5f24f0c813092bfbab77f0d84945f3cf5bf6091a11f8328db025991e2208c4738293a27dbff52589bd97d20bf0425b33e206ccc4aaa80f554fa9ba3302bf48@54.83.125.50:30312",   // bootnode-aws-us-east-1-003
+	"enode://dc038f940b6c522b7cb025817526e3fc1946355ee9f4715e085c5cb1fa9e255bb2a0e7700cba095934ae28b075fe6a2b0c8c5dd4c0edff103aceb36709dc6b2d@44.198.174.9:30312",   // bootnode-aws-us-east-1-001
+	"enode://1d08f75cf391fd3ab1ebac1211878c1c00045e345c215390c6f16fc3671f263e0f8742c3914cfa7a6174ceea99ef4df829c119a0102bd6ae7d78cf7cb1040c36@18.205.117.200:30312", // bootnode-aws-us-east-1-002
+	"enode://b9823ddc92f460e8281ed45d47a5b0413df3088f257f76c2800cf1f126c820e3f19f044f493b39d8598ab95bf39f2e1e94dffc174f7c3d51befbab476e3659d8@54.221.53.24:30312",   // bootnode-aws-us-east-1-003
 }
 
 // RopstenBootnodes are the enode URLs of the P2P bootstrap nodes running on the
