@@ -258,7 +258,7 @@ func (g *Genesis) configOrDefault(ghash common.Hash, chainId uint64) *params.Cha
 		switch chainId {
 		case 369:
 			return params.PulseChainConfig
-		case 940:
+		case 941:
 			return params.PulseChainTestnetConfig
 		default:
 			return params.MainnetChainConfig
