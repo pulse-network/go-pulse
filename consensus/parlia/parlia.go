@@ -819,12 +819,13 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *
 	if receipts == nil {
 		receipts = make([]*types.Receipt, 0)
 	}
+	usedGas := header.GasUsed
 
 	number := header.Number.Uint64()
 	if header.Number.Cmp(common.Big1) == 0 || p.chainConfig.IsPrimordialPulseBlock(number) {
 		log.Info("Initializing system contracts", "number", header.Number)
 
-		if err := p.initContracts(state, header, cx, &txs, &receipts, nil, &header.GasUsed, true); err != nil {
+		if err := p.initContracts(state, header, cx, &txs, &receipts, nil, &usedGas, true); err != nil {
 			log.Error("Failed to initialize system contracts")
 		}
 
@@ -838,7 +839,7 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *
 	// on the next block (epoch), the authorization snapshot will be updated
 	if (number+1)%(p.config.Epoch*p.config.Era) == 0 {
 		log.Info("Triggering staked validator rotation", "number", number)
-		err := p.rotateValidators(state, header, cx, &txs, &receipts, nil, &header.GasUsed, true)
+		err := p.rotateValidators(state, header, cx, &txs, &receipts, nil, &usedGas, true)
 		if err != nil {
 			log.Error("Staked validator rotation failed", "number", number, "err", err)
 		}
@@ -858,7 +859,7 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *
 			}
 		}
 		if !signedRecently {
-			err = p.slash(spoiledVal, state, header, cx, &txs, &receipts, nil, &header.GasUsed, true)
+			err = p.slash(spoiledVal, state, header, cx, &txs, &receipts, nil, &usedGas, true)
 			if err != nil {
 				// it is possible that slash validator failed because of the slash channel is disabled.
 				log.Error("Slash validator failed", "block hash", header.Hash(), "address", spoiledVal, "err", err)
@@ -866,13 +867,17 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *
 		}
 	}
 
-	err := p.distributeIncoming(p.val, state, header, cx, &txs, &receipts, nil, &header.GasUsed, true)
+	err := p.distributeIncoming(p.val, state, header, cx, &txs, &receipts, nil, &usedGas, true)
 	if err != nil {
 		panic(err)
 	}
 	// should not happen. Once happen, stop the node is better than broadcast the block
-	if header.GasLimit < header.GasUsed {
+	if header.GasLimit < usedGas {
 		panic("Gas consumption of system txs exceed the gas limit")
+	}
+	// CAUTION: header is currently passed by reference, so these changes mutate the caller's value.
+	if !p.chainConfig.IsSystemZero(header.Number) {
+		header.GasUsed = usedGas
 	}
 	header.Root = state.IntermediateRoot(chain.Config().IsEIP158(header.Number))
 	header.UncleHash = types.CalcUncleHash(nil)
