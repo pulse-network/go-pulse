@@ -23,7 +23,7 @@ Although Proof-of-Work (PoW) has been proven as a mechanism to implement a decen
 Proof-of-Authority(PoA) provides defense against 51% attack, with improved efficiency and tolerance to certain levels of Byzantine players (malicious or hacked).
 The PoA protocol however is most criticized for being not as decentralized as PoW, as the validators, i.e. the nodes that take turns to produce blocks, have all the authorities and are prone to corruption and security attacks.
 
-Other blockchains, such as EOS and Cosmos both, introduce different types of Deputy Proof of Stake (DPoS) to allow the token holders to vote and elect the validator set. It increases the decentralization and favors community governance.
+Other blockchains, such as EOS and Cosmos both, introduce different types of Delegated Proof of Stake (DPoS) to allow the token holders to vote and elect the validator set. It increases the decentralization and favors community governance.
 
 PulseChain inherits and modifies the Binance Smart Chain consensus engine, Parlia, which combines DPoS and PoA. The PulseChain consensus engine has the following properties:
 
