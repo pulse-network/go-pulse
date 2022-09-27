@@ -270,16 +270,16 @@ var (
 	//
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
-	AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, nil, false, new(EthashConfig), nil}
+	AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, nil, false, new(EthashConfig), nil, nil, nil}
 
 	// AllCliqueProtocolChanges contains every protocol change (EIPs) introduced
 	// and accepted by the Ethereum core developers into the Clique consensus.
 	//
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
-	AllCliqueProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, nil, nil, nil, false, nil, &CliqueConfig{Period: 0, Epoch: 30000}}
+	AllCliqueProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, nil, nil, nil, false, nil, &CliqueConfig{Period: 0, Epoch: 30000}, nil, nil}
 
-	TestChainConfig = &ChainConfig{big.NewInt(1), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, nil, false, new(EthashConfig), nil}
+	TestChainConfig = &ChainConfig{big.NewInt(1), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, nil, false, new(EthashConfig), nil, nil, nil}
 	TestRules       = TestChainConfig.Rules(new(big.Int), false)
 )
 
@@ -385,6 +385,10 @@ type ChainConfig struct {
 	// Various consensus engines
 	Ethash *EthashConfig `json:"ethash,omitempty"`
 	Clique *CliqueConfig `json:"clique,omitempty"`
+
+	// PulseChain modifications
+	PrimordialPulseBlock *big.Int  `json:"primordialPulseBlock,omitempty"` // PrimordialPulseBlock switch block (nil = no fork, 0 = already activated)
+	Treasury             *Treasury `json:"treasury,omitempty"`             // An optional treasury which will receive allocations during the PrimordialPulseBlock
 }
 
 // EthashConfig is the consensus engine configs for proof-of-work based sealing.
@@ -576,6 +580,12 @@ func (c *ChainConfig) IsCancun(num *big.Int) bool {
 	return isForked(c.CancunBlock, num)
 }
 
+// IsPrimordialPulseBlock returns whether or not the given block is the primordial pulse block.
+func (c *ChainConfig) IsPrimordialPulseBlock(num *big.Int) bool {
+	// Returns whether or not the given block is the PrimordialPulseBlock.
+	return c.PrimordialPulseBlock != nil && c.PrimordialPulseBlock.Cmp(num) == 0
+}
+
 // CheckCompatible checks whether scheduled fork transitions have been imported
 // with a mismatching chain configuration.
 func (c *ChainConfig) CheckCompatible(newcfg *ChainConfig, height uint64) *ConfigCompatError {
@@ -704,6 +714,9 @@ func (c *ChainConfig) checkCompatible(newcfg *ChainConfig, head *big.Int) *Confi
 	}
 	if isForkIncompatible(c.CancunBlock, newcfg.CancunBlock, head) {
 		return newCompatError("Cancun fork block", c.CancunBlock, newcfg.CancunBlock)
+	}
+	if isForkIncompatible(c.PrimordialPulseBlock, newcfg.PrimordialPulseBlock, head) {
+		return newCompatError("PrimordialPulse fork block", c.PrimordialPulseBlock, newcfg.PrimordialPulseBlock)
 	}
 	return nil
 }
