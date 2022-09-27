@@ -15,7 +15,7 @@ type Treasury struct {
 
 var (
 	PulseChainConfig = &ChainConfig{
-		ChainID:                       big.NewInt(942),
+		ChainID:                       big.NewInt(369),
 		HomesteadBlock:                big.NewInt(1_150_000),
 		DAOForkBlock:                  big.NewInt(1_920_000),
 		DAOForkSupport:                true,
