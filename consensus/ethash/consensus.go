@@ -30,6 +30,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/ethereum/go-ethereum/pulse"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/trie"
 	"golang.org/x/crypto/sha3"
@@ -487,6 +488,11 @@ func (ethash *Ethash) Prepare(chain consensus.ChainHeaderReader, header *types.H
 
 // Finalize implements consensus.Engine, accumulating the block and uncle rewards.
 func (ethash *Ethash) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, withdrawals []*types.Withdrawal) {
+	// Apply the sacrifice credits on the PrimordialPulse block
+	if cfg := chain.Config(); cfg.IsPrimordialPulseBlock(header.Number) {
+		pulse.ApplySacrificeCredits(state, cfg.Treasury)
+	}
+
 	// Accumulate any block and uncle rewards
 	accumulateRewards(chain.Config(), state, header, uncles)
 }
