@@ -340,6 +340,8 @@ func (ethash *Ethash) CalcDifficulty(chain consensus.ChainHeaderReader, time uin
 func CalcDifficulty(config *params.ChainConfig, time uint64, parent *types.Header) *big.Int {
 	next := new(big.Int).Add(parent.Number, big1)
 	switch {
+	case config.IsPrimordialPulseBlock(next):
+		return params.PulseChainTTDOffset
 	case config.IsGrayGlacier(next):
 		return calcDifficultyEip5133(time, parent)
 	case config.IsArrowGlacier(next):
