@@ -299,15 +299,22 @@ func SetupGenesisBlockWithOverride(db ethdb.Database, genesis *Genesis, override
 		applyOverrides(genesis.Config)
 		return genesis.Config, block.Hash(), nil
 	}
+	// Assume mainnet chainId first
+	chainId := params.MainnetChainConfig.ChainID.Uint64()
+	// Note: The `genesis` argument will be one of:
+	// - nil: if running without the `init` command and without providing a network flag (--pulsechain, --ropsten, etc..)
+	// - defaulted: when a network flag is provided (--pulsechain, --ropsten, etc..), genesis will hold the defaults
+	// - custom: if running with the `init` command supplying a custom genesis.json file, genesis will hold the file contents
 	// Check whether the genesis block is already written.
 	if genesis != nil {
+		chainId = genesis.Config.ChainID.Uint64()
 		hash := genesis.ToBlock().Hash()
 		if hash != stored {
 			return genesis.Config, hash, &GenesisMismatchError{stored, hash}
 		}
 	}
 	// Get the existing chain configuration.
-	newcfg := genesis.configOrDefault(stored)
+	newcfg := genesis.configOrDefault(stored, chainId)
 	applyOverrides(newcfg)
 	if err := newcfg.CheckConfigForkOrder(); err != nil {
 		return newcfg, common.Hash{}, err
@@ -323,7 +330,10 @@ func SetupGenesisBlockWithOverride(db ethdb.Database, genesis *Genesis, override
 	// chain config as that would be AllProtocolChanges (applying any new fork
 	// on top of an existing private network genesis block). In that case, only
 	// apply the overrides.
-	if genesis == nil && stored != params.MainnetGenesisHash {
+	// Added: support custom config for PrimordialPulse fork with mainnet genesis
+	// and non-standard chain id.
+	if genesis == nil && (storedcfg.PrimordialPulseBlock != nil ||
+		stored != params.MainnetGenesisHash) {
 		newcfg = storedcfg
 		applyOverrides(newcfg)
 	}
@@ -341,12 +351,19 @@ func SetupGenesisBlockWithOverride(db ethdb.Database, genesis *Genesis, override
 	return newcfg, stored, nil
 }
 
-func (g *Genesis) configOrDefault(ghash common.Hash) *params.ChainConfig {
+func (g *Genesis) configOrDefault(ghash common.Hash, chainId uint64) *params.ChainConfig {
 	switch {
 	case g != nil:
 		return g.Config
 	case ghash == params.MainnetGenesisHash:
-		return params.MainnetChainConfig
+		switch chainId {
+		case params.PulseChainConfig.ChainID.Uint64():
+			return params.PulseChainConfig
+		case params.PulseChainTestnetConfig.ChainID.Uint64():
+			return params.PulseChainTestnetConfig
+		default:
+			return params.MainnetChainConfig
+		}
 	case ghash == params.RopstenGenesisHash:
 		return params.RopstenChainConfig
 	case ghash == params.SepoliaGenesisHash:
