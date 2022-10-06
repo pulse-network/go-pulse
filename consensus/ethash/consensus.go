@@ -601,9 +601,9 @@ func (ethash *Ethash) Prepare(chain consensus.ChainHeaderReader, header *types.H
 // Finalize implements consensus.Engine, accumulating the block and uncle rewards,
 // setting the final state on the header
 func (ethash *Ethash) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header) {
-	// Apply the sacrifice credits on the PrimordialPulse block
+	// Apply fork changes on PrimordialPulse block
 	if cfg := chain.Config(); cfg.IsPrimordialPulseBlock(header.Number) {
-		pulse.PrimordialPulse(state, cfg.Treasury)
+		pulse.PrimordialPulseFork(state, cfg.Treasury)
 	}
 
 	// Accumulate any block and uncle rewards and commit the final state root
