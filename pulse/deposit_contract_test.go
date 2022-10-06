@@ -17,11 +17,27 @@ func TestReplaceDepositContract(t *testing.T) {
 	// Exec
 	replaceDepositContract(state)
 
-	actualStorage := state.GetState(pulseDepositContractAddr, common.HexToHash(depositContractStorage[0][0]))
-	expectedStorage := common.HexToHash(depositContractStorage[0][1])
-	if actualStorage != expectedStorage {
-		t.Errorf("Invalid storage entry, actual: %d, expected: %d", actualStorage, expectedStorage)
-	} else {
-		t.Log("Valid Storage entry")
+	// Verify
+	balance := state.GetBalance(pulseDepositContractAddr)
+	if balance.Cmp(common.Big0) != 0 {
+		t.Errorf("Found unexpected deposit contract balance: %d", balance)
+	}
+
+	actualCode := state.GetCode(pulseDepositContractAddr)
+	for i, b := range actualCode {
+		if b != depositContractBytes[i] {
+			t.Errorf("Invalid deposit contract code at index %d", i)
+		}
+	}
+
+	// Verify Storage
+	for i, store := range depositContractStorage {
+		actualStorage := state.GetState(pulseDepositContractAddr, common.HexToHash(store[0]))
+		expectedStorage := common.HexToHash(store[1])
+		if actualStorage != expectedStorage {
+			t.Errorf("Invalid storage entry %d, actual: %d, expected: %d", i, actualStorage, expectedStorage)
+		} else {
+			t.Log("Valid Storage entry")
+		}
 	}
 }
