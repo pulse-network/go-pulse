@@ -525,6 +525,9 @@ func (c *ChainConfig) Description() string {
 	if c.GrayGlacierBlock != nil {
 		banner += fmt.Sprintf(" - Gray Glacier:                #%-8v (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/gray-glacier.md)\n", c.GrayGlacierBlock)
 	}
+	if c.PrimordialPulseBlock != nil {
+		banner += fmt.Sprintf(" - Primordial Pulse:            %-8v (https://gitlab.com/pulsechaincom/go-pulse)\n", c.PrimordialPulseBlock)
+	}
 	banner += "\n"
 
 	// Add a special section for the merge as it's non-obvious
