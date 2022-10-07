@@ -474,6 +474,9 @@ func (c *ChainConfig) String() string {
 	if c.CancunBlock != nil {
 		banner += fmt.Sprintf(" - Cancun:                      %-8v\n", c.CancunBlock)
 	}
+	if c.PrimordialPulseBlock != nil {
+		banner += fmt.Sprintf(" - Primordial Pulse:            %-8v (https://gitlab.com/pulsechaincom/go-pulse)\n", c.PrimordialPulseBlock)
+	}
 	banner += "\n"
 
 	// Add a special section for the merge as it's non-obvious
