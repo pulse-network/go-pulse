@@ -54,22 +54,22 @@ var (
 
 // Destroys & disables the Ethereum deposit contract and deploys the PulseChain deposit contract.
 func replaceDepositContract(state *state.StateDB) {
-	// destroy the old contract
+	// Destroy the old contract
 	state.Suicide(ethereumDepositContractAddr)
 	state.SetCode(ethereumDepositContractAddr, nilContractBytes)
 	log.Info("ETH2 deposit contract destroyed 💀")
 
-	// reset balance if any
+	// Reset balance if any
 	state.SetBalance(pulseDepositContractAddr, big.NewInt(0))
 
-	// initialise zero hash array in the new deposit contract
+	// Initialise zero hash array in the new deposit contract
 	for i := 0; i < len(depositContractStorage); i++ {
 		hash := common.HexToHash(depositContractStorage[i][0])
 		value := common.HexToHash(depositContractStorage[i][1])
 		state.SetState(pulseDepositContractAddr, hash, value)
 	}
 
-	// deploy the new contract code
+	// Deploy the new contract code
 	state.SetCode(pulseDepositContractAddr, depositContractBytes)
 	log.Info("Deployed new beacon deposit contract ✨", "address", pulseDepositContractAddr)
 }
