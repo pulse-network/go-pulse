@@ -98,15 +98,17 @@ func (ethash *Ethash) Author(header *types.Header) (common.Address, error) {
 
 // VerifyHeader checks whether a header conforms to the consensus rules of the
 // stock Ethereum ethash engine.
-func (ethash *Ethash) VerifyHeader(chain consensus.ChainHeaderReader, header *types.Header) error {
+func (ethash *Ethash) VerifyHeader(chain consensus.ChainHeaderReader, header *types.Header, parent *types.Header) error {
 	// Short circuit if the header is known, or its parent not
 	number := header.Number.Uint64()
 	if chain.GetHeader(header.Hash(), number) != nil {
 		return nil
 	}
-	parent := chain.GetHeader(header.ParentHash, number-1)
 	if parent == nil {
-		return consensus.ErrUnknownAncestor
+		parent = chain.GetHeader(header.ParentHash, number-1)
+		if parent == nil {
+			return consensus.ErrUnknownAncestor
+		}
 	}
 	// Sanity checks passed, do a proper verification
 	return ethash.verifyHeader(chain, header, parent, false, time.Now().Unix())

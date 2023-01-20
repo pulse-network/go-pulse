@@ -3,7 +3,6 @@ package params
 import (
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
 )
 
@@ -28,7 +27,6 @@ var (
 		DAOForkBlock:                  big.NewInt(1_920_000),
 		DAOForkSupport:                true,
 		EIP150Block:                   big.NewInt(2_463_000),
-		EIP150Hash:                    common.HexToHash("0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0"),
 		EIP155Block:                   big.NewInt(2_675_000),
 		EIP158Block:                   big.NewInt(2_675_000),
 		ByzantiumBlock:                big.NewInt(4_370_000),
@@ -52,7 +50,6 @@ var (
 		DAOForkBlock:                  big.NewInt(1_920_000),
 		DAOForkSupport:                true,
 		EIP150Block:                   big.NewInt(2_463_000),
-		EIP150Hash:                    common.HexToHash("0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0"),
 		EIP155Block:                   big.NewInt(2_675_000),
 		EIP158Block:                   big.NewInt(2_675_000),
 		ByzantiumBlock:                big.NewInt(4_370_000),
