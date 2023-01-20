@@ -660,6 +660,11 @@ func (c *ChainConfig) IsPrimordialPulseBlock(num *big.Int) bool {
 	return c.PrimordialPulseBlock != nil && c.PrimordialPulseBlock.Cmp(num) == 0
 }
 
+// Returns true if there is a PrimordialPulse block in the future.
+func (c *ChainConfig) PrimordialPulseAhead(num *big.Int) bool {
+	return c.PrimordialPulseBlock != nil && c.PrimordialPulseBlock.Cmp(num) > 0
+}
+
 // CheckCompatible checks whether scheduled fork transitions have been imported
 // with a mismatching chain configuration.
 func (c *ChainConfig) CheckCompatible(newcfg *ChainConfig, height uint64, time uint64) *ConfigCompatError {
