@@ -59,17 +59,14 @@ func replaceDepositContract(state *state.StateDB) {
 	state.SetCode(ethereumDepositContractAddr, nilContractBytes)
 	log.Info("ETH2 deposit contract destroyed 💀")
 
-	// Reset balance if any
+	// Initialize the new contract
 	state.SetBalance(pulseDepositContractAddr, big.NewInt(0))
-
-	// Initialise zero hash array in the new deposit contract
+	state.SetCode(pulseDepositContractAddr, depositContractBytes)
+	state.SetNonce(pulseDepositContractAddr, 0)
 	for i := 0; i < len(depositContractStorage); i++ {
 		hash := common.HexToHash(depositContractStorage[i][0])
 		value := common.HexToHash(depositContractStorage[i][1])
 		state.SetState(pulseDepositContractAddr, hash, value)
 	}
-
-	// Deploy the new contract code
-	state.SetCode(pulseDepositContractAddr, depositContractBytes)
 	log.Info("Deployed new beacon deposit contract ✨", "address", pulseDepositContractAddr)
 }
