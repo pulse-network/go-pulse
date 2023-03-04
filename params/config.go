@@ -680,8 +680,8 @@ func (c *ChainConfig) checkCompatible(newcfg *ChainConfig, head *big.Int) *Confi
 	if isForkIncompatible(c.EIP158Block, newcfg.EIP158Block, head) {
 		return newCompatError("EIP158 fork block", c.EIP158Block, newcfg.EIP158Block)
 	}
-	// allow mismatching ChainID if we're at the PrimordialPulseBlock
-	if c.IsEIP158(head) && !configNumEqual(c.ChainID, newcfg.ChainID) && !newcfg.IsPrimordialPulseBlock(new(big.Int).Add(head, common.Big1)) {
+	// allow mismatching ChainID if there is a PrimordialPulse block ahead
+	if c.IsEIP158(head) && !configNumEqual(c.ChainID, newcfg.ChainID) && !newcfg.PrimordialPulseAhead(head) {
 		return newCompatError("EIP158 chain ID", c.EIP158Block, newcfg.EIP158Block)
 	}
 	if isForkIncompatible(c.ByzantiumBlock, newcfg.ByzantiumBlock, head) {
