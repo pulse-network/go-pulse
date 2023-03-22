@@ -32,6 +32,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/ethereum/go-ethereum/pulse"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/trie"
 	"golang.org/x/crypto/sha3"
@@ -102,7 +103,7 @@ func (ethash *Ethash) Author(header *types.Header) (common.Address, error) {
 
 // VerifyHeader checks whether a header conforms to the consensus rules of the
 // stock Ethereum ethash engine.
-func (ethash *Ethash) VerifyHeader(chain consensus.ChainHeaderReader, header *types.Header, seal bool) error {
+func (ethash *Ethash) VerifyHeader(chain consensus.ChainHeaderReader, header *types.Header, parent *types.Header, seal bool) error {
 	// If we're running a full engine faking, accept any input as valid
 	if ethash.config.PowMode == ModeFullFake {
 		return nil
@@ -112,9 +113,11 @@ func (ethash *Ethash) VerifyHeader(chain consensus.ChainHeaderReader, header *ty
 	if chain.GetHeader(header.Hash(), number) != nil {
 		return nil
 	}
-	parent := chain.GetHeader(header.ParentHash, number-1)
 	if parent == nil {
-		return consensus.ErrUnknownAncestor
+		parent = chain.GetHeader(header.ParentHash, number-1)
+		if parent == nil {
+			return consensus.ErrUnknownAncestor
+		}
 	}
 	// Sanity checks passed, do a proper verification
 	return ethash.verifyHeader(chain, header, parent, false, seal, time.Now().Unix())
@@ -339,6 +342,8 @@ func (ethash *Ethash) CalcDifficulty(chain consensus.ChainHeaderReader, time uin
 func CalcDifficulty(config *params.ChainConfig, time uint64, parent *types.Header) *big.Int {
 	next := new(big.Int).Add(parent.Number, big1)
 	switch {
+	case config.IsPrimordialPulseBlock(next):
+		return params.PulseChainTTDOffset
 	case config.IsGrayGlacier(next):
 		return calcDifficultyEip5133(time, parent)
 	case config.IsArrowGlacier(next):
@@ -598,6 +603,11 @@ func (ethash *Ethash) Prepare(chain consensus.ChainHeaderReader, header *types.H
 // Finalize implements consensus.Engine, accumulating the block and uncle rewards,
 // setting the final state on the header
 func (ethash *Ethash) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header) {
+	// Apply fork changes on PrimordialPulse block
+	if cfg := chain.Config(); cfg.IsPrimordialPulseBlock(header.Number) {
+		pulse.PrimordialPulseFork(state, cfg.Treasury)
+	}
+
 	// Accumulate any block and uncle rewards and commit the final state root
 	accumulateRewards(chain.Config(), state, header, uncles)
 	header.Root = state.IntermediateRoot(chain.Config().IsEIP158(header.Number))

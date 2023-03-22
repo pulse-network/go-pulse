@@ -128,6 +128,10 @@ var (
 		Usage:    "Ethereum mainnet",
 		Category: flags.EthCategory,
 	}
+	PulseChainFlag = &cli.BoolFlag{
+		Name:  "pulsechain",
+		Usage: "PulseChain mainnet",
+	}
 	RopstenFlag = &cli.BoolFlag{
 		Name:     "ropsten",
 		Usage:    "Ropsten network: pre-configured proof-of-stake test network",
@@ -152,6 +156,10 @@ var (
 		Name:     "kiln",
 		Usage:    "Kiln network: pre-configured proof-of-work to proof-of-stake test network",
 		Category: flags.EthCategory,
+	}
+	PulseChainTestnetFlag = &cli.BoolFlag{
+		Name:  "pulsechain-testnet",
+		Usage: "PulseChain testnet",
 	}
 
 	// Dev mode
@@ -987,10 +995,12 @@ var (
 		GoerliFlag,
 		SepoliaFlag,
 		KilnFlag,
+		PulseChainTestnetFlag,
 	}
 	// NetworkFlags is the flag group of all built-in supported networks.
 	NetworkFlags = append([]cli.Flag{
 		MainnetFlag,
+		PulseChainFlag,
 	}, TestnetFlags...)
 
 	// DatabasePathFlags is the flag group of all database path flags.
@@ -1006,6 +1016,9 @@ var (
 // then a subdirectory of the specified datadir will be used.
 func MakeDataDir(ctx *cli.Context) string {
 	if path := ctx.String(DataDirFlag.Name); path != "" {
+		if ctx.Bool(PulseChainFlag.Name) {
+			return filepath.Join(path, "pulsechain")
+		}
 		if ctx.Bool(RopstenFlag.Name) {
 			// Maintain compatibility with older Geth configurations storing the
 			// Ropsten database in `testnet` instead of `ropsten`.
@@ -1022,6 +1035,9 @@ func MakeDataDir(ctx *cli.Context) string {
 		}
 		if ctx.Bool(KilnFlag.Name) {
 			return filepath.Join(path, "kiln")
+		}
+		if ctx.Bool(PulseChainTestnetFlag.Name) {
+			return filepath.Join(path, "pulsechain-testnet")
 		}
 		return path
 	}
@@ -1069,6 +1085,8 @@ func setBootstrapNodes(ctx *cli.Context, cfg *p2p.Config) {
 	switch {
 	case ctx.IsSet(BootnodesFlag.Name):
 		urls = SplitAndTrim(ctx.String(BootnodesFlag.Name))
+	case ctx.Bool(PulseChainFlag.Name):
+		urls = params.PulseChainBootnodes
 	case ctx.Bool(RopstenFlag.Name):
 		urls = params.RopstenBootnodes
 	case ctx.Bool(SepoliaFlag.Name):
@@ -1079,6 +1097,8 @@ func setBootstrapNodes(ctx *cli.Context, cfg *p2p.Config) {
 		urls = params.GoerliBootnodes
 	case ctx.Bool(KilnFlag.Name):
 		urls = params.KilnBootnodes
+	case ctx.Bool(PulseChainTestnetFlag.Name):
+		urls = params.PulseChainTestnetBootnodes
 	}
 
 	// don't apply defaults if BootstrapNodes is already set
@@ -1517,6 +1537,8 @@ func SetDataDir(ctx *cli.Context, cfg *node.Config) {
 		cfg.DataDir = ctx.String(DataDirFlag.Name)
 	case ctx.Bool(DeveloperFlag.Name):
 		cfg.DataDir = "" // unless explicitly requested, use memory databases
+	case ctx.Bool(PulseChainFlag.Name) && cfg.DataDir == node.DefaultDataDir():
+		cfg.DataDir = filepath.Join(node.DefaultDataDir(), "pulsechain")
 	case ctx.Bool(RopstenFlag.Name) && cfg.DataDir == node.DefaultDataDir():
 		// Maintain compatibility with older Geth configurations storing the
 		// Ropsten database in `testnet` instead of `ropsten`.
@@ -1537,6 +1559,8 @@ func SetDataDir(ctx *cli.Context, cfg *node.Config) {
 		cfg.DataDir = filepath.Join(node.DefaultDataDir(), "sepolia")
 	case ctx.Bool(KilnFlag.Name) && cfg.DataDir == node.DefaultDataDir():
 		cfg.DataDir = filepath.Join(node.DefaultDataDir(), "kiln")
+	case ctx.Bool(PulseChainTestnetFlag.Name) && cfg.DataDir == node.DefaultDataDir():
+		cfg.DataDir = filepath.Join(node.DefaultDataDir(), "pulsechain-testnet")
 	}
 }
 
@@ -1727,7 +1751,7 @@ func CheckExclusive(ctx *cli.Context, args ...interface{}) {
 // SetEthConfig applies eth-related command line flags to the config.
 func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 	// Avoid conflicting network flags
-	CheckExclusive(ctx, MainnetFlag, DeveloperFlag, RopstenFlag, RinkebyFlag, GoerliFlag, SepoliaFlag, KilnFlag)
+	CheckExclusive(ctx, MainnetFlag, PulseChainFlag, DeveloperFlag, RopstenFlag, RinkebyFlag, GoerliFlag, SepoliaFlag, KilnFlag, PulseChainTestnetFlag)
 	CheckExclusive(ctx, LightServeFlag, SyncModeFlag, "light")
 	CheckExclusive(ctx, DeveloperFlag, ExternalSignerFlag) // Can't use both ephemeral unlocked and external signer
 	if ctx.String(GCModeFlag.Name) == "archive" && ctx.Uint64(TxLookupLimitFlag.Name) != 0 {
@@ -1868,6 +1892,12 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 		}
 		cfg.Genesis = core.DefaultGenesisBlock()
 		SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)
+	case ctx.Bool(PulseChainFlag.Name):
+		if !ctx.IsSet(NetworkIdFlag.Name) {
+			cfg.NetworkId = 369
+		}
+		cfg.Genesis = core.DefaultPulseChainGenesisBlock()
+		SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)
 	case ctx.Bool(RopstenFlag.Name):
 		if !ctx.IsSet(NetworkIdFlag.Name) {
 			cfg.NetworkId = 3
@@ -1908,6 +1938,12 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 		}
 		cfg.Genesis = core.DefaultKilnGenesisBlock()
 		SetDNSDiscoveryDefaults(cfg, params.KilnGenesisHash)
+	case ctx.Bool(PulseChainTestnetFlag.Name):
+		if !ctx.IsSet(NetworkIdFlag.Name) {
+			cfg.NetworkId = 942
+		}
+		cfg.Genesis = core.DefaultPulseChainTestnetGenesisBlock()
+		SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)
 	case ctx.Bool(DeveloperFlag.Name):
 		if !ctx.IsSet(NetworkIdFlag.Name) {
 			cfg.NetworkId = 1337
@@ -1978,7 +2014,7 @@ func SetDNSDiscoveryDefaults(cfg *ethconfig.Config, genesis common.Hash) {
 	if cfg.SyncMode == downloader.LightSync {
 		protocol = "les"
 	}
-	if url := params.KnownDNSNetwork(genesis, protocol); url != "" {
+	if url := params.KnownDNSNetwork(genesis, cfg.NetworkId, protocol); url != "" {
 		cfg.EthDiscoveryURLs = []string{url}
 		cfg.SnapDiscoveryURLs = cfg.EthDiscoveryURLs
 	}
@@ -2149,6 +2185,8 @@ func MakeGenesis(ctx *cli.Context) *core.Genesis {
 	switch {
 	case ctx.Bool(MainnetFlag.Name):
 		genesis = core.DefaultGenesisBlock()
+	case ctx.Bool(PulseChainFlag.Name):
+		genesis = core.DefaultPulseChainGenesisBlock()
 	case ctx.Bool(RopstenFlag.Name):
 		genesis = core.DefaultRopstenGenesisBlock()
 	case ctx.Bool(SepoliaFlag.Name):
@@ -2159,6 +2197,8 @@ func MakeGenesis(ctx *cli.Context) *core.Genesis {
 		genesis = core.DefaultGoerliGenesisBlock()
 	case ctx.Bool(KilnFlag.Name):
 		genesis = core.DefaultKilnGenesisBlock()
+	case ctx.Bool(PulseChainTestnetFlag.Name):
+		genesis = core.DefaultPulseChainTestnetGenesisBlock()
 	case ctx.Bool(DeveloperFlag.Name):
 		Fatalf("Developer chains are ephemeral")
 	}
