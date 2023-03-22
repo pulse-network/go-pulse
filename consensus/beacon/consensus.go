@@ -78,18 +78,20 @@ func (beacon *Beacon) Author(header *types.Header) (common.Address, error) {
 
 // VerifyHeader checks whether a header conforms to the consensus rules of the
 // stock Ethereum consensus engine.
-func (beacon *Beacon) VerifyHeader(chain consensus.ChainHeaderReader, header *types.Header, seal bool) error {
+func (beacon *Beacon) VerifyHeader(chain consensus.ChainHeaderReader, header *types.Header, parent *types.Header, seal bool) error {
 	reached, err := IsTTDReached(chain, header.ParentHash, header.Number.Uint64()-1)
 	if err != nil {
 		return err
 	}
 	if !reached {
-		return beacon.ethone.VerifyHeader(chain, header, seal)
+		return beacon.ethone.VerifyHeader(chain, header, parent, seal)
 	}
 	// Short circuit if the parent is not known
-	parent := chain.GetHeader(header.ParentHash, header.Number.Uint64()-1)
 	if parent == nil {
-		return consensus.ErrUnknownAncestor
+		parent = chain.GetHeader(header.ParentHash, header.Number.Uint64()-1)
+		if parent == nil {
+			return consensus.ErrUnknownAncestor
+		}
 	}
 	// Sanity checks passed, do a proper verification
 	return beacon.verifyHeader(chain, header, parent)
@@ -99,8 +101,26 @@ func (beacon *Beacon) VerifyHeader(chain consensus.ChainHeaderReader, header *ty
 // concurrently. The method returns a quit channel to abort the operations and
 // a results channel to retrieve the async verifications.
 // VerifyHeaders expect the headers to be ordered and continuous.
+//
+// Normal Cases:
+//  1. x * POW blocks
+//  2. x * POS blocks
+//  3. x * POW blocks => y * POS blocks
+//
+// Special Cases for PulseChain:
+//  4. x * POS blocks[eth] => POW fork block[pls]
+//  5. x * POS blocks[eth] => POW fork block[pls] => y * POS blocks[pls]
 func (beacon *Beacon) VerifyHeaders(chain consensus.ChainHeaderReader, headers []*types.Header, seals []bool) (chan<- struct{}, <-chan error) {
-	if !beacon.IsPoSHeader(headers[len(headers)-1]) {
+	chainCfg := chain.Config()
+	lastHeader := headers[len(headers)-1]
+	primordialPulseIndex := 0
+	// Check for the presence of the pulse fork in the tail of this header batch.
+	if chainCfg.PrimordialPulseAhead(headers[0].Number) && !chainCfg.PrimordialPulseAhead(lastHeader.Number) {
+		primordialPulseIndex = int(new(big.Int).Sub(chainCfg.PrimordialPulseBlock, headers[0].Number).Uint64())
+	}
+
+	// Case 1
+	if !beacon.IsPoSHeader(lastHeader) && primordialPulseIndex == 0 {
 		return beacon.ethone.VerifyHeaders(chain, headers, seals)
 	}
 	var (
@@ -117,9 +137,11 @@ func (beacon *Beacon) VerifyHeaders(chain consensus.ChainHeaderReader, headers [
 		}
 	}
 
-	if len(preHeaders) == 0 {
+	if len(preHeaders) == 0 && primordialPulseIndex == 0 {
+		// Case 2
 		// All the headers are pos headers. Verify that the parent block reached total terminal difficulty.
-		if reached, err := IsTTDReached(chain, headers[0].ParentHash, headers[0].Number.Uint64()-1); !reached {
+		// If the pulse fork is ahead, process pre-fork ethereum pos blocks as if TTD is reached.
+		if reached, err := IsTTDReached(chain, headers[0].ParentHash, headers[0].Number.Uint64()-1); !reached && !chainCfg.PrimordialPulseAhead(headers[0].Number) {
 			// TTD not reached for the first block, mark subsequent with invalid terminal block
 			if err == nil {
 				err = consensus.ErrInvalidTerminalBlock
@@ -141,19 +163,47 @@ func (beacon *Beacon) VerifyHeaders(chain consensus.ChainHeaderReader, headers [
 	)
 	go func() {
 		var (
-			old, new, out      = 0, len(preHeaders), 0
+			oldIdx, out        = 0, 0
 			errors             = make([]error, len(headers))
 			done               = make([]bool, len(headers))
 			oldDone, oldResult = beacon.ethone.VerifyHeaders(chain, preHeaders, preSeals)
-			newDone, newResult = beacon.verifyHeaders(chain, postHeaders, preHeaders[len(preHeaders)-1])
+			lastPreHeader      *types.Header
 		)
-		// Verify that pre-merge headers don't overflow the TTD
-		if index, err := verifyTerminalPoWBlock(chain, preHeaders); err != nil {
-			// Mark all subsequent pow headers with the error.
-			for i := index; i < len(preHeaders); i++ {
-				errors[i], done[i] = err, true
+		// Case 3
+		if len(preHeaders) > 0 {
+			// Verify that pre-merge headers don't overflow the TTD
+			if index, err := verifyTerminalPoWBlock(chain, preHeaders); err != nil {
+				// Mark all subsequent pow headers with the error.
+				for i := index; i < len(preHeaders); i++ {
+					errors[i], done[i] = err, true
+				}
 			}
+
+			lastPreHeader = preHeaders[len(preHeaders)-1]
 		}
+
+		// Handle fork partitioning and verification for cases 4 and 5
+		var forkHeader *types.Header
+		preforkPosHeaders := postHeaders
+		preforkIdx := len(preHeaders)
+		postforkPosHeaders := []*types.Header{}
+		postforkIdx := len(headers)
+		if primordialPulseIndex > 0 {
+			preforkPosHeaders = postHeaders[:primordialPulseIndex]
+			forkHeader = postHeaders[primordialPulseIndex]
+
+			// Verify the fork block
+			forkBlockResult := beacon.ethone.VerifyHeader(chain, forkHeader, postHeaders[primordialPulseIndex-1], true)
+			forkBlockIdx := preforkIdx + len(preforkPosHeaders)
+			errors[forkBlockIdx], done[forkBlockIdx] = forkBlockResult, true
+
+			// Can be empty in case 4
+			postforkPosHeaders = postHeaders[primordialPulseIndex+1:]
+			postforkIdx = forkBlockIdx + 1
+		}
+		preforkPosDone, preforkPosResult := beacon.verifyHeaders(chain, preforkPosHeaders, lastPreHeader)
+		postforkPosDone, postforkPosResult := beacon.verifyHeaders(chain, postforkPosHeaders, forkHeader)
+
 		// Collect the results
 		for {
 			for ; done[out]; out++ {
@@ -164,16 +214,20 @@ func (beacon *Beacon) VerifyHeaders(chain consensus.ChainHeaderReader, headers [
 			}
 			select {
 			case err := <-oldResult:
-				if !done[old] { // skip TTD-verified failures
-					errors[old], done[old] = err, true
+				if !done[oldIdx] { // skip TTD-verified failures
+					errors[oldIdx], done[oldIdx] = err, true
 				}
-				old++
-			case err := <-newResult:
-				errors[new], done[new] = err, true
-				new++
+				oldIdx++
+			case err := <-preforkPosResult:
+				errors[preforkIdx], done[preforkIdx] = err, true
+				preforkIdx++
+			case err := <-postforkPosResult:
+				errors[postforkIdx], done[postforkIdx] = err, true
+				postforkIdx++
 			case <-abort:
 				close(oldDone)
-				close(newDone)
+				close(preforkPosDone)
+				close(postforkPosDone)
 				return
 			}
 		}
@@ -200,6 +254,11 @@ func verifyTerminalPoWBlock(chain consensus.ChainHeaderReader, preHeaders []*typ
 			return i, consensus.ErrInvalidTerminalBlock
 		}
 		td.Add(td, head.Difficulty)
+	}
+	// Skip terminal block check if pulse fork is ahead,
+	// these are pre-fork ethereum mainnet pos blocks.
+	if chain.Config().PrimordialPulseAhead(preHeaders[len(preHeaders)-1].Number) {
+		return 0, nil
 	}
 	// Check that the last block is the terminal block
 	if td.Cmp(chain.Config().TerminalTotalDifficulty) < 0 {
