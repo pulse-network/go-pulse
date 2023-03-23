@@ -433,8 +433,8 @@ func (g *Genesis) configOrDefault(ghash common.Hash, chainId uint64) *params.Cha
 		switch chainId {
 		case params.PulseChainConfig.ChainID.Uint64():
 			return params.PulseChainConfig
-		case params.PulseChainTestnetConfig.ChainID.Uint64():
-			return params.PulseChainTestnetConfig
+		case params.PulseChainTestnetV3Config.ChainID.Uint64():
+			return params.PulseChainTestnetV3Config
 		default:
 			return params.MainnetChainConfig
 		}
@@ -597,10 +597,10 @@ func DefaultSepoliaGenesisBlock() *Genesis {
 	}
 }
 
-// DefaultPulseChainTestnetGenesisBlock returns the PulseChain testnet genesis block.
-func DefaultPulseChainTestnetGenesisBlock() *Genesis {
+// DefaultPulseChainTestnetV3GenesisBlock returns the PulseChain Testnet V3 genesis block.
+func DefaultPulseChainTestnetV3GenesisBlock() *Genesis {
 	return &Genesis{
-		Config:     params.PulseChainTestnetConfig,
+		Config:     params.PulseChainTestnetV3Config,
 		Nonce:      66,
 		ExtraData:  hexutil.MustDecode("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
 		GasLimit:   5000,
