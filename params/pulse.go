@@ -46,7 +46,7 @@ var (
 		PrimordialPulseBlock:          big.NewInt(15_700_000), // TODO: UPDATE FORK BLOCK
 	}
 
-	PulseChainTestnetConfig = &ChainConfig{
+	PulseChainTestnetV3Config = &ChainConfig{
 		ChainID:                       big.NewInt(942),
 		HomesteadBlock:                big.NewInt(1_150_000),
 		DAOForkBlock:                  big.NewInt(1_920_000),
