@@ -271,8 +271,8 @@ func prepare(ctx *cli.Context) {
 	case ctx.IsSet(utils.SepoliaFlag.Name):
 		log.Info("Starting Geth on Sepolia testnet...")
 
-	case ctx.IsSet(utils.PulseChainTestnetFlag.Name):
-		log.Info("Starting Geth on PulseChain testnet...")
+	case ctx.IsSet(utils.PulseChainTestnetV3Flag.Name):
+		log.Info("Starting Geth on PulseChain Testnet V3...")
 
 	case ctx.IsSet(utils.DeveloperFlag.Name):
 		log.Info("Starting Geth in ephemeral dev mode...")
