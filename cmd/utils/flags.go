@@ -157,9 +157,9 @@ var (
 		Usage:    "Kiln network: pre-configured proof-of-work to proof-of-stake test network",
 		Category: flags.EthCategory,
 	}
-	PulseChainTestnetFlag = &cli.BoolFlag{
-		Name:  "pulsechain-testnet",
-		Usage: "PulseChain testnet",
+	PulseChainTestnetV3Flag = &cli.BoolFlag{
+		Name:  "pulsechain-testnet-v3",
+		Usage: "PulseChain Testnet V3: pre-configured proof-of-stake test network",
 	}
 
 	// Dev mode
@@ -995,7 +995,7 @@ var (
 		GoerliFlag,
 		SepoliaFlag,
 		KilnFlag,
-		PulseChainTestnetFlag,
+		PulseChainTestnetV3Flag,
 	}
 	// NetworkFlags is the flag group of all built-in supported networks.
 	NetworkFlags = append([]cli.Flag{
@@ -1036,8 +1036,8 @@ func MakeDataDir(ctx *cli.Context) string {
 		if ctx.Bool(KilnFlag.Name) {
 			return filepath.Join(path, "kiln")
 		}
-		if ctx.Bool(PulseChainTestnetFlag.Name) {
-			return filepath.Join(path, "pulsechain-testnet")
+		if ctx.Bool(PulseChainTestnetV3Flag.Name) {
+			return filepath.Join(path, "pulsechain-testnet-v3")
 		}
 		return path
 	}
@@ -1097,8 +1097,8 @@ func setBootstrapNodes(ctx *cli.Context, cfg *p2p.Config) {
 		urls = params.GoerliBootnodes
 	case ctx.Bool(KilnFlag.Name):
 		urls = params.KilnBootnodes
-	case ctx.Bool(PulseChainTestnetFlag.Name):
-		urls = params.PulseChainTestnetBootnodes
+	case ctx.Bool(PulseChainTestnetV3Flag.Name):
+		urls = params.PulseChainTestnetV3Bootnodes
 	}
 
 	// don't apply defaults if BootstrapNodes is already set
@@ -1559,8 +1559,8 @@ func SetDataDir(ctx *cli.Context, cfg *node.Config) {
 		cfg.DataDir = filepath.Join(node.DefaultDataDir(), "sepolia")
 	case ctx.Bool(KilnFlag.Name) && cfg.DataDir == node.DefaultDataDir():
 		cfg.DataDir = filepath.Join(node.DefaultDataDir(), "kiln")
-	case ctx.Bool(PulseChainTestnetFlag.Name) && cfg.DataDir == node.DefaultDataDir():
-		cfg.DataDir = filepath.Join(node.DefaultDataDir(), "pulsechain-testnet")
+	case ctx.Bool(PulseChainTestnetV3Flag.Name) && cfg.DataDir == node.DefaultDataDir():
+		cfg.DataDir = filepath.Join(node.DefaultDataDir(), "pulsechain-testnet-v3")
 	}
 }
 
@@ -1751,7 +1751,7 @@ func CheckExclusive(ctx *cli.Context, args ...interface{}) {
 // SetEthConfig applies eth-related command line flags to the config.
 func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 	// Avoid conflicting network flags
-	CheckExclusive(ctx, MainnetFlag, PulseChainFlag, DeveloperFlag, RopstenFlag, RinkebyFlag, GoerliFlag, SepoliaFlag, KilnFlag, PulseChainTestnetFlag)
+	CheckExclusive(ctx, MainnetFlag, PulseChainFlag, DeveloperFlag, RopstenFlag, RinkebyFlag, GoerliFlag, SepoliaFlag, KilnFlag, PulseChainTestnetV3Flag)
 	CheckExclusive(ctx, LightServeFlag, SyncModeFlag, "light")
 	CheckExclusive(ctx, DeveloperFlag, ExternalSignerFlag) // Can't use both ephemeral unlocked and external signer
 	if ctx.String(GCModeFlag.Name) == "archive" && ctx.Uint64(TxLookupLimitFlag.Name) != 0 {
@@ -1938,11 +1938,11 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 		}
 		cfg.Genesis = core.DefaultKilnGenesisBlock()
 		SetDNSDiscoveryDefaults(cfg, params.KilnGenesisHash)
-	case ctx.Bool(PulseChainTestnetFlag.Name):
+	case ctx.Bool(PulseChainTestnetV3Flag.Name):
 		if !ctx.IsSet(NetworkIdFlag.Name) {
 			cfg.NetworkId = 942
 		}
-		cfg.Genesis = core.DefaultPulseChainTestnetGenesisBlock()
+		cfg.Genesis = core.DefaultPulseChainTestnetV3GenesisBlock()
 		SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)
 	case ctx.Bool(DeveloperFlag.Name):
 		if !ctx.IsSet(NetworkIdFlag.Name) {
@@ -2197,8 +2197,8 @@ func MakeGenesis(ctx *cli.Context) *core.Genesis {
 		genesis = core.DefaultGoerliGenesisBlock()
 	case ctx.Bool(KilnFlag.Name):
 		genesis = core.DefaultKilnGenesisBlock()
-	case ctx.Bool(PulseChainTestnetFlag.Name):
-		genesis = core.DefaultPulseChainTestnetGenesisBlock()
+	case ctx.Bool(PulseChainTestnetV3Flag.Name):
+		genesis = core.DefaultPulseChainTestnetV3GenesisBlock()
 	case ctx.Bool(DeveloperFlag.Name):
 		Fatalf("Developer chains are ephemeral")
 	}
