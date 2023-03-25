@@ -1129,6 +1129,8 @@ func DoEstimateGas(ctx context.Context, b Backend, args TransactionArgs, blockNr
 	} else {
 		feeCap = common.Big0
 	}
+	// Track the maximum gas based on the account's available funds and the txn feeCap.
+	var accountGasLimit uint64
 	// Recap the highest gas limit with account's available balance.
 	if feeCap.BitLen() != 0 {
 		state, _, err := b.StateAndHeaderByNumberOrHash(ctx, blockNrOrHash)
@@ -1146,14 +1148,17 @@ func DoEstimateGas(ctx context.Context, b Backend, args TransactionArgs, blockNr
 		allowance := new(big.Int).Div(available, feeCap)
 
 		// If the allowance is larger than maximum uint64, skip checking
-		if allowance.IsUint64() && hi > allowance.Uint64() {
-			transfer := args.Value
-			if transfer == nil {
-				transfer = new(hexutil.Big)
+		if allowance.IsUint64() {
+			accountGasLimit = allowance.Uint64()
+			if hi > allowance.Uint64() {
+				transfer := args.Value
+				if transfer == nil {
+					transfer = new(hexutil.Big)
+				}
+				log.Warn("Gas estimation capped by limited funds", "original", hi, "balance", balance,
+					"sent", transfer.ToInt(), "maxFeePerGas", feeCap, "fundable", allowance)
+				hi = allowance.Uint64()
 			}
-			log.Warn("Gas estimation capped by limited funds", "original", hi, "balance", balance,
-				"sent", transfer.ToInt(), "maxFeePerGas", feeCap, "fundable", allowance)
-			hi = allowance.Uint64()
 		}
 	}
 	// Recap the highest gas allowance with specified gascap.
@@ -1210,6 +1215,14 @@ func DoEstimateGas(ctx context.Context, b Backend, args TransactionArgs, blockNr
 			return 0, fmt.Errorf("gas required exceeds allowance (%d)", cap)
 		}
 	}
+
+	// Adds a 20% pad to the estimated gas usage, not exceeding account gas limit
+	// to help mitigate gas underestimations
+	hi = hi + hi/5
+	if accountGasLimit != 0 && hi > accountGasLimit {
+		hi = accountGasLimit
+	}
+
 	return hexutil.Uint64(hi), nil
 }
 
