@@ -46,8 +46,8 @@ var (
 		PrimordialPulseBlock:          big.NewInt(15_700_000), // TODO: UPDATE FORK BLOCK
 	}
 
-	PulseChainTestnetV3Config = &ChainConfig{
-		ChainID:                       big.NewInt(942),
+	PulseChainTestnetV4Config = &ChainConfig{
+		ChainID:                       big.NewInt(943),
 		HomesteadBlock:                big.NewInt(1_150_000),
 		DAOForkBlock:                  big.NewInt(1_920_000),
 		DAOForkSupport:                true,
@@ -74,7 +74,7 @@ var (
 
 func testnetTreasury() *Treasury {
 	var pulseChainTestnetTreasuryBalance math.HexOrDecimal256
-	pulseChainTestnetTreasuryBalance.UnmarshalText([]byte("0xC9F2C9CD04674EDEA40000000"))
+	pulseChainTestnetTreasuryBalance.UnmarshalText([]byte("0x314DC6448D9338C15B0A00000000"))
 
 	return &Treasury{
 		Addr:    "0xA592ED65885bcbCeb30442F4902a0D1Cf3AcB8fC",
