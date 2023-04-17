@@ -293,8 +293,8 @@ func prepare(ctx *cli.Context) {
 	case ctx.IsSet(utils.KilnFlag.Name):
 		log.Info("Starting Geth on Kiln testnet...")
 
-	case ctx.IsSet(utils.PulseChainTestnetV3Flag.Name):
-		log.Info("Starting Geth on PulseChain Testnet V3...")
+	case ctx.IsSet(utils.PulseChainTestnetV4Flag.Name):
+		log.Info("Starting Geth on PulseChain Testnet V4...")
 
 	case ctx.IsSet(utils.DeveloperFlag.Name):
 		log.Info("Starting Geth in ephemeral dev mode...")
