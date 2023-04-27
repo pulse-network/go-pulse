@@ -1894,7 +1894,7 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 		SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)
 	case ctx.Bool(PulseChainFlag.Name):
 		if !ctx.IsSet(NetworkIdFlag.Name) {
-			cfg.NetworkId = 369
+			cfg.NetworkId = params.PulseChainNetworkId
 		}
 		cfg.Genesis = core.DefaultPulseChainGenesisBlock()
 		SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)
@@ -1928,7 +1928,7 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 		SetDNSDiscoveryDefaults(cfg, params.GoerliGenesisHash)
 	case ctx.Bool(PulseChainTestnetV4Flag.Name):
 		if !ctx.IsSet(NetworkIdFlag.Name) {
-			cfg.NetworkId = 943
+			cfg.NetworkId = params.PulseChainTestnetV4NetworkId
 		}
 		cfg.Genesis = core.DefaultPulseChainTestnetV4GenesisBlock()
 		SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)

@@ -33,13 +33,26 @@ var (
 	GoerliGenesisHash  = common.HexToHash("0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a")
 )
 
-// TrustedCheckpoints associates each known checkpoint with the genesis hash of
-// the chain it belongs to.
-var TrustedCheckpoints = map[common.Hash]*TrustedCheckpoint{
-	MainnetGenesisHash: MainnetTrustedCheckpoint,
-	SepoliaGenesisHash: SepoliaTrustedCheckpoint,
-	RinkebyGenesisHash: RinkebyTrustedCheckpoint,
-	GoerliGenesisHash:  GoerliTrustedCheckpoint,
+// GetTrustedCheckpoint maps the genesis hash and network id to the known checkpoint
+func GetTrustedCheckpoint(genesisHash common.Hash, networkId uint64) *TrustedCheckpoint {
+	switch genesisHash {
+	case MainnetGenesisHash:
+		switch networkId {
+		case PulseChainNetworkId:
+			return PulseChainTrustedCheckpoint
+		case PulseChainTestnetV4NetworkId:
+			return PulseChainTestnetV4TrustedCheckpoint
+		default:
+			return MainnetTrustedCheckpoint
+		}
+	case SepoliaGenesisHash:
+		return SepoliaTrustedCheckpoint
+	case RinkebyGenesisHash:
+		return RinkebyTrustedCheckpoint
+	case GoerliGenesisHash:
+		return GoerliTrustedCheckpoint
+	}
+	return nil
 }
 
 // CheckpointOracles associates each known checkpoint oracles with the genesis hash of

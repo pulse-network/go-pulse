@@ -213,7 +213,7 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
 	cacheLimit := cacheConfig.TrieCleanLimit + cacheConfig.TrieDirtyLimit + cacheConfig.SnapshotLimit
 	checkpoint := config.Checkpoint
 	if checkpoint == nil {
-		checkpoint = params.TrustedCheckpoints[eth.blockchain.Genesis().Hash()]
+		checkpoint = params.GetTrustedCheckpoint(eth.blockchain.Genesis().Hash(), config.NetworkId)
 	}
 	if eth.handler, err = newHandler(&handlerConfig{
 		Database:       chainDb,

@@ -3,6 +3,7 @@ package params
 import (
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
 )
 
@@ -21,6 +22,16 @@ var PulseChainTTDOffset = big.NewInt(131_072)
 var PulseChainTerminalTotalDifficulty, _ = new(big.Int).SetString("58_750_003_716_598_352_947_541", 0)
 
 var (
+	PulseChainNetworkId = uint64(369)
+
+	// PulseChainTrustedCheckpoint contains the light client trusted checkpoint for the main network.
+	PulseChainTrustedCheckpoint = &TrustedCheckpoint{
+		SectionIndex: 451,
+		SectionHead:  common.HexToHash("0xe47f84b9967eb2ad2afff74d59901b63134660011822fdababaf8fdd18a75aa6"),
+		CHTRoot:      common.HexToHash("0xc31e0462ca3d39a46111bb6b63ac4e1cac84089472b7474a319d582f72b3f0c0"),
+		BloomRoot:    common.HexToHash("0x7c9f25ce3577a3ab330d52a7343f801899cf9d4980c69f81de31ccc1a055c809"),
+	}
+
 	PulseChainConfig = &ChainConfig{
 		ChainID:                       big.NewInt(369),
 		HomesteadBlock:                big.NewInt(1_150_000),
@@ -42,6 +53,16 @@ var (
 		TerminalTotalDifficultyPassed: true,
 		Ethash:                        new(EthashConfig),
 		PrimordialPulseBlock:          big.NewInt(15_700_000), // TODO: UPDATE FORK BLOCK
+	}
+
+	PulseChainTestnetV4NetworkId = uint64(943)
+
+	// PulseChainTestnetV4TrustedCheckpoint contains the light client trusted checkpoint for the test network.
+	PulseChainTestnetV4TrustedCheckpoint = &TrustedCheckpoint{
+		SectionIndex: 451,
+		SectionHead:  common.HexToHash("0xe47f84b9967eb2ad2afff74d59901b63134660011822fdababaf8fdd18a75aa6"),
+		CHTRoot:      common.HexToHash("0xc31e0462ca3d39a46111bb6b63ac4e1cac84089472b7474a319d582f72b3f0c0"),
+		BloomRoot:    common.HexToHash("0x7c9f25ce3577a3ab330d52a7343f801899cf9d4980c69f81de31ccc1a055c809"),
 	}
 
 	PulseChainTestnetV4Config = &ChainConfig{
