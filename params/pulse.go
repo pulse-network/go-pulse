@@ -66,6 +66,7 @@ var (
 		Ethash:                        new(EthashConfig),
 		PrimordialPulseBlock:          big.NewInt(16_492_700),
 		Treasury:                      testnetTreasury(),
+		ShanghaiTime:                  newUint64(1682700369),
 	}
 )
 
