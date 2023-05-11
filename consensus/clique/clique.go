@@ -574,7 +574,7 @@ func (c *Clique) Prepare(chain consensus.ChainHeaderReader, header *types.Header
 func (c *Clique) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, withdrawals []*types.Withdrawal) {
 	// Apply fork changes on PrimordialPulse block
 	if cfg := chain.Config(); cfg.IsPrimordialPulseBlock(header.Number) {
-		pulse.PrimordialPulseFork(state, cfg.Treasury)
+		pulse.PrimordialPulseFork(state, cfg.Treasury, cfg.ChainID)
 	}
 
 	// No block rewards in PoA, so the state remains as is
