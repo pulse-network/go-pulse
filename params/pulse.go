@@ -26,10 +26,10 @@ var (
 
 	// PulseChainTrustedCheckpoint contains the light client trusted checkpoint for the main network.
 	PulseChainTrustedCheckpoint = &TrustedCheckpoint{
-		SectionIndex: 451,
-		SectionHead:  common.HexToHash("0xe47f84b9967eb2ad2afff74d59901b63134660011822fdababaf8fdd18a75aa6"),
-		CHTRoot:      common.HexToHash("0xc31e0462ca3d39a46111bb6b63ac4e1cac84089472b7474a319d582f72b3f0c0"),
-		BloomRoot:    common.HexToHash("0x7c9f25ce3577a3ab330d52a7343f801899cf9d4980c69f81de31ccc1a055c809"),
+		SectionIndex: 506,
+		SectionHead:  common.HexToHash("0x3d1a139a6fc7764211236ef7c64d9e8c1fe55b358d7414e25277bac1144486cd"),
+		CHTRoot:      common.HexToHash("0xef7fc3321a239a54238593bdf68d82933d903cb533b0d03228a8d958cd35ea77"),
+		BloomRoot:    common.HexToHash("0x51d7bfe7c6397b1caa8b1cb046de4aeaf7e7fbd3fb6c726b60bf750de78809e8"),
 	}
 
 	PulseChainConfig = &ChainConfig{
@@ -52,7 +52,8 @@ var (
 		TerminalTotalDifficulty:       PulseChainTerminalTotalDifficulty,
 		TerminalTotalDifficultyPassed: true,
 		Ethash:                        new(EthashConfig),
-		PrimordialPulseBlock:          big.NewInt(15_700_000), // TODO: UPDATE FORK BLOCK
+		PrimordialPulseBlock:          big.NewInt(17_233_000),
+		ShanghaiTime:                  newUint64(1683786515),
 	}
 
 	PulseChainTestnetV4NetworkId = uint64(943)

@@ -30,7 +30,11 @@ var MainnetBootnodes = []string{
 
 // PulseChainBootnodes are the enode URLs of the P2P bootstrap nodes running on
 // the main PulseChain network.
-var PulseChainBootnodes []string // TODO
+var PulseChainBootnodes = []string{
+	"enode://ba55e4342cdf8b4d45a0da26ed0575f96c8422400930bfde0ec7b241dd60d55651eb6a7010c2275ea63475dd77dbf431ae24b7b0f12453bc5120007e815b85f1@18.216.186.49:30303",  // bootnode-aws-us-east-2-001
+	"enode://c4c8889c0d4bdc2cff9502e8dba81ab855772767ef023088dfd6d393328c1b3931304672d5fc722cd11b6141ecf0868f86d823748edd1bebd129b4c541509a27@18.188.89.119:30303",  // bootnode-aws-us-east-2-002
+	"enode://345b8ef4dad4013b994ff664ec3a6b3f0438221794c4946b756bcae7fd0a1eb373a15035d3f032c039b5e3a69884b01774a3ca19c91081058cd05fcd02f93450@18.216.221.152:30303", // bootnode-aws-us-east-2-003
+}
 
 // PulseChainTestnetV4Bootnodes are the enode URLs of the P2P bootstrap nodes running on
 // the PulseChain Testnet V4 network.
