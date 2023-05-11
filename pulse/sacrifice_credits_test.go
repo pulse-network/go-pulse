@@ -25,7 +25,7 @@ func TestApplySacrificeCredits(t *testing.T) {
 	}
 
 	// Exec
-	applySacrificeCredits(state, treasury)
+	applySacrificeCredits(state, treasury, params.PulseChainConfig.ChainID)
 
 	// Verify
 	actual := state.GetBalance(common.HexToAddress(treasury.Addr))
